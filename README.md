@@ -4,7 +4,7 @@ My small photography site, built with [Spacefast](https://spacefast.com) and [Sp
 
 [See it live](https://f.camera) · [Use this theme with an agent](docs/CLONE_PROMPT.md)
 
-The site has a responsive masonry gallery, small handwritten notes, and a photo viewer with camera settings and location maps. You can reuse the theme for your own photos.
+The site has a responsive masonry gallery, small handwritten notes, and a photo viewer with camera settings and location maps. Click a photo's title in the gallery to turn it into a postcard and read the message on the back. You can reuse the theme for your own photos.
 
 ## How it works
 
@@ -19,16 +19,17 @@ Photos belong to the space's WordPress media library. They are not copied into t
 | `pages/index.tsx` | Native Zero client page for `/` |
 | `client/index.tsx` | Zero app entry and page composition |
 | `client/components/` | JSX components for the bio, gallery, photo viewer, and map |
-| `client/data/` | Typed WordPress query, photo normalization, and safe caption text |
+| `client/data/` | Typed WordPress query, photo normalization, and safe note text |
 | `client/lib/` | Date selection, newest-first order, and original-image EXIF |
 | `style.css` | Layout, masonry spacing, notes, and photo viewer |
-| `server/index.ts` | Zero capsule and public media collection |
+| `server/index.ts` | Zero capsule, public media collection, and caption query |
+| `server/photo-captions.ts` | Server-only reader for actual WordPress captions |
 | `sf.jsonc` | Zero entries, page metadata, and public asset build |
 | `sample-details.json` | Sourced metadata for the example collection; no photo files |
 
 ## Run locally
 
-Use Node.js 22 or newer. No Spacefast login is needed for the local preview.
+Use Node.js 22.18 or newer. No Spacefast login is needed for the bundled local demo.
 
 ```sh
 git clone https://github.com/f/f.camera.git
@@ -45,7 +46,9 @@ To preview your own space's public media instead:
 npm run dev -- --wp-origin https://YOUR-SPACE.view.fast
 ```
 
-The preview only reads public media. It does not upload photos or edit WordPress. You can use another port with `npm run dev -- --port 4174`.
+The preview does not upload photos or edit WordPress. It caches the public media list for 45 seconds, so after editing a photo in Content, wait up to 45 seconds and reload to see the change locally. You can use another port with `npm run dev -- --port 4174`.
+
+For post-its from your own media library, configure the caption reader below. Without it, public photos and postcards still work, but post-its stay hidden. The bundled demo includes explicit captions and needs no credential.
 
 Run the checks and compile the Zero project:
 
@@ -65,12 +68,29 @@ Open the space's Content area and edit its WordPress media library. The gallery 
 | --- | --- |
 | Title | Photo title |
 | Alternative text | Image description for screen readers |
-| Caption | Caption and photographer credits in the photo viewer |
-| Description | Optional handwritten note over the gallery photo |
+| Caption | Optional handwritten post-it over the gallery photo and below its title in the viewer |
+| Description | Secret postcard message, revealed by clicking the photo title in the gallery |
 
-Leave Description empty for no note. Keep notes to one to three short lines; longer text is visually clipped. Line breaks are kept, while HTML formatting is removed. Notes appear only in the gallery. Keep credits in Caption so they remain available in the photo viewer.
+Leave Caption empty for no post-it. Short notes work best over the gallery photo, where longer text is clipped to three lines. The viewer shows the full note below the title. Description is a separate message for the postcard's back; leave it empty for no postcard. Both fields keep line breaks and paragraph breaks, while HTML formatting is removed and link text becomes plain text. Their content is rendered safely as text.
 
-The current gallery reads up to 100 image attachments. A new photo or an updated title, note, or caption appears on the next page load without a code deployment.
+These are field mappings in the theme. The theme does not copy or move existing WordPress content between Caption and Description. Edit those fields in Content if you want to move an older note or add a postcard message.
+
+### Read exact captions
+
+WordPress can fill `caption.rendered` from Description when Caption is empty. This app never uses that generated value for a post-it. Its Zero server query reads `caption.raw` and returns only the captions belonging to photos visible in the public media list. An empty caption stays empty, even when the description has text.
+
+Create a machine credential for this Space with the exact resource `/wp-json/wp/v2/media`, the `page.view` and `content.publish` capabilities, and the live target. WordPress requires the editor capability to read `context=edit`; the app itself only makes GET requests. Set `WP_MEDIA_ORIGIN` to your Space's HTTPS origin and store the credential as secret `WP_MEDIA_TOKEN` in the Space's environment variables. Keep both variables server-side.
+
+For local development, put the same values in the Git-ignored `.env.server` file:
+
+```dotenv
+WP_MEDIA_ORIGIN=https://YOUR-SPACE.view.fast
+WP_MEDIA_TOKEN=YOUR_PRIVATE_MACHINE_TOKEN
+```
+
+Restart the preview after configuring them. Never commit that file or put the token in browser code. The gallery still uses Zero's native public content query for the photos; only the caption query needs the credential. No WordPress plugin or Spacefast source change is required.
+
+The current gallery reads up to 100 image attachments. Adding a photo or updating its title, caption, or description does not need a code deployment. Reload the page to read the changes; the local preview may keep its media list for up to 45 seconds.
 
 ## Dates, EXIF, and maps
 
@@ -78,7 +98,9 @@ Photos are sorted newest first using the capture timestamp WordPress extracted f
 
 The photo viewer reads camera, lens, exposure, capture time, and GPS from the same-origin original image. WordPress metadata fills missing fields. Original reads happen on demand, are cached for the page session, and are limited to 20 MiB and 20 seconds. Unsupported files and missing values do not get invented settings.
 
-GPS locations show a marker on a small OpenStreetMap preview. Sourced locations for the example collection are labeled as approximate areas. A photo without a location gets no map. The map keeps its attribution and has an **Open map** link. Use the arrow keys to move between photos and Escape to close the viewer.
+GPS locations show a marker on a small OpenStreetMap preview. Sourced locations for the example collection are labeled as approximate areas. A photo without a location gets no map. The map keeps its attribution and has an **Open map** link. Use the arrow keys to move between photos, or swipe left and right on the photo on a phone. Escape closes the viewer.
+
+A photo with a Description has a clickable title in the gallery. Clicking it brings the photo to the center, enlarges it, and flips it to reveal the postcard message. **Back to photographs** or Escape returns to the gallery. Clicking the photo itself opens the regular details viewer, where the title is plain text and its post-it appears below it.
 
 ## Make it yours
 
@@ -102,4 +124,4 @@ Later pushes to the connected production branch build and publish through Spacef
 
 The authored theme source is available under the [MIT license](LICENSE). Bundled Manrope and Caveat fonts keep their SIL Open Font License files. The bundled `exifr` reader keeps its MIT license. See [third-party notices](THIRD_PARTY_NOTICES.md) for the full list and example photo sources.
 
-The example photos belong to their credited photographers. They are not photographs by me, and the theme's MIT license does not grant rights to those images. Their WordPress captions link to the original sources. Use your own photos or follow each photo's applicable terms when making your own collection.
+The example photos belong to their credited photographers. They are not photographs by me, and the theme's MIT license does not grant rights to those images. [Third-party notices](THIRD_PARTY_NOTICES.md) lists their original sources. Include any required credit when adding a photo; Caption and Description display plain text, so write out a source URL if it must be visible there. Use your own photos or follow each photo's applicable terms when making your own collection.

@@ -14,7 +14,9 @@
 }
 @font-face {
   font-family: Caveat;
-  src: url("/assets/caveat-variable.ttf") format("truetype");
+  src:
+    url("/assets/caveat-variable.woff2") format("woff2"),
+    url("/assets/caveat-variable.ttf") format("truetype");
   font-weight: 400 700;
   font-style: normal;
   font-display: swap;
@@ -227,6 +229,18 @@ a:focus-visible {
 .profile-link:hover {
   color: var(--ink);
 }
+.external-link-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.1em;
+}
 main {
   min-height: 60vh;
   outline: none;
@@ -284,7 +298,8 @@ main {
   aspect-ratio: var(--image-ratio, 1.5);
   background: #f3f4f3;
 }
-.photo-frame--viewer {
+.photo-frame--viewer,
+.photo-frame--postcard {
   --loading-surface: #111214;
   height: 100%;
   min-height: 0;
@@ -313,7 +328,8 @@ main {
     opacity 0.25s ease,
     visibility 0.25s;
 }
-.photo-frame--viewer .photo-loading {
+.photo-frame--viewer .photo-loading,
+.photo-frame--postcard .photo-loading {
   color: #999da5;
 }
 .photo-frame[data-state="loaded"] .photo-loading {
@@ -538,6 +554,41 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+}
+.lightbox-image-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  transform: translateX(var(--swipe-offset, 0px));
+  transition: transform 180ms ease-out;
+}
+.lightbox-image-slide[data-dragging] {
+  transition: none;
+  animation: none;
+}
+.lightbox-image-slide[data-slide="next"] {
+  --slide-entry: 40px;
+}
+.lightbox-image-slide[data-slide="previous"] {
+  --slide-entry: -40px;
+}
+.lightbox-image-slide[data-slide]:not([data-dragging]) {
+  animation: photo-slide-in 180ms ease-out;
+}
+@keyframes photo-slide-in {
+  from {
+    opacity: 0.65;
+    transform: translateX(var(--slide-entry));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 #lightbox-image {
   display: block;
@@ -563,18 +614,162 @@ dialog::backdrop {
   letter-spacing: -0.4px;
   margin: 0 0 10px;
 }
-#lightbox-credit {
-  font-size: 11px;
-  line-height: 1.8;
-  color: #a2a5ab;
+.postcard-trigger {
+  display: inline;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.postcard-trigger:hover {
+  text-decoration-line: underline;
+  text-decoration-color: #77705f;
+}
+.postcard-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  color: #eeeae0;
+}
+.postcard-dialog::backdrop {
+  background: transparent;
+}
+.postcard-scrim {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  background: rgb(12 14 15 / 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.postcard-return {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: #dedacf;
+}
+.postcard-return svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.postcard-stage {
+  position: fixed;
+  container: postcard / size;
+  transform-origin: 0 0;
+  perspective: 1800px;
+}
+.postcard-turn {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.postcard-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 24px 90px rgb(0 0 0 / 0.3);
+}
+.postcard-front {
+  background: #111214;
+  transform: rotateY(0deg);
+}
+.postcard-front .photo-frame {
+  height: 100%;
+}
+.postcard-front img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.postcard-back {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 4vw, 52px);
+  transform: rotateY(180deg);
+  background-color: #f5efdf;
+  background-image:
+    radial-gradient(ellipse at 90% 0%, rgb(211 190 145 / 0.18), transparent 65%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(123 101 64 / 0.022) 3px 4px);
+  color: #494333;
+  border: 1px solid #e2d8c2;
+}
+.postcard-stamp {
+  float: right;
+  width: clamp(116px, 26cqw, 220px);
+  height: auto;
+  margin: -8px -8px 12px 22px;
+  opacity: 0.84;
+  pointer-events: none;
+  user-select: none;
+}
+.postcard-writing {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b8ae95 transparent;
+  padding: 8px;
+  font: 500 clamp(26px, 2.8vw, 36px)/1.45 Caveat, cursive;
+}
+.postcard-writing:focus-visible {
+  outline: 1px solid #9b8e70;
+  outline-offset: 5px;
+}
+.postcard-writing p {
+  margin: 0;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-#lightbox-credit a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+@container postcard (max-width: 600px) {
+  .postcard-back {
+    padding: 24px 20px;
+  }
+  .postcard-writing {
+    font-size: 28px;
+  }
+  .postcard-stamp {
+    margin-left: 12px;
+  }
 }
-#lightbox-credit a:hover {
-  color: #fff;
+@container postcard (max-height: 360px) {
+  .postcard-back {
+    padding: 16px;
+  }
+  .postcard-stamp {
+    width: 110px;
+  }
+  .postcard-writing {
+    font-size: 24px;
+    line-height: 1.3;
+  }
 }
 .detail-section {
   border-top: 1px solid #303237;
@@ -1063,6 +1258,27 @@ dialog::backdrop {
 .photo-note--4::before {
   left: 54%;
   transform: translateX(-50%) rotate(-7deg);
+}
+.photo-note-section {
+  padding: 8px 6px 16px;
+}
+.photo-note.photo-note--detail {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  padding: 20px 18px 18px;
+  font-size: 24px;
+  line-height: 1.25;
+  pointer-events: auto;
+  transform: none;
+}
+.photo-note--detail .photo-note-text {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  margin: 0;
+  white-space: pre-wrap;
 }
 @media (max-width: 1000px) {
   .photo-note {

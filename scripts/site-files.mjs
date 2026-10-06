@@ -6,6 +6,7 @@ export const siteFiles = [
   "assets/manrope-regular.ttf",
   "assets/manrope-bold.ttf",
   "assets/manrope-OFL.txt",
+  "assets/caveat-variable.woff2",
   "assets/caveat-variable.ttf",
   "assets/caveat-OFL.txt",
   "assets/exifr-LICENSE.txt",

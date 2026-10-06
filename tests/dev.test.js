@@ -115,20 +115,30 @@ test("optional public WordPress origin returns local image URLs and proxies only
   const jpeg = await readFile(
     new URL("./fixtures/exif-gps.jpg", import.meta.url),
   );
+  const requests = new Map();
   const upstream = await listen(
     createServer((request, response) => {
+      requests.set(request.url, (requests.get(request.url) || 0) + 1);
       if (request.url.startsWith("/wp-json/wp/v2/media")) {
         response.setHeader("content-type", "application/json");
+        if (request.url.endsWith("?invalid=1") && requests.get(request.url) === 1)
+          return response.end('{"error":"not a media list"}');
         response.end(
           JSON.stringify([
             {
               id: 91,
               source_url: "/photo.jpg",
-              media_details: { width: 1, height: 1, sizes: {} },
+              media_details: {
+                width: 1,
+                height: 1,
+                sizes: { retry: { source_url: "/retry.jpg" } },
+              },
             },
           ]),
         );
-      } else if (request.url === "/photo.jpg") {
+      } else if (["/photo.jpg", "/retry.jpg"].includes(request.url)) {
+        if (request.url === "/retry.jpg" && requests.get(request.url) === 1)
+          return response.writeHead(503).end();
         response.setHeader("content-type", "image/jpeg");
         response.end(jpeg);
       } else {
@@ -141,13 +151,48 @@ test("optional public WordPress origin returns local image URLs and proxies only
     await createDevServer({ wpOrigin: upstream, watch: false }),
     context,
   );
-  const photos = await (
-    await fetch(`${origin}/wp-json/wp/v2/media?per_page=100`)
-  ).json();
+  const mediaPath = "/wp-json/wp/v2/media?per_page=100";
+  const mediaReads = await Promise.all(
+    Array.from({ length: 3 }, async () =>
+      (await fetch(`${origin}${mediaPath}`)).json(),
+    ),
+  );
+  const photos = mediaReads[0];
   assert.equal(photos[0].id, 91);
   assert.equal(photos[0].source_url, `${origin}/photo.jpg`);
-  const image = await fetch(photos[0].source_url);
-  assert.equal(image.headers.get("content-type"), "image/jpeg");
-  assert.deepEqual(Buffer.from(await image.arrayBuffer()), jpeg);
+  for (const read of mediaReads) assert.deepEqual(read, photos);
+  assert.deepEqual(await (await fetch(`${origin}${mediaPath}`)).json(), photos);
+  assert.equal(requests.get(mediaPath), 1);
+  await fetch(`${origin}/wp-json/wp/v2/media?per_page=1`);
+  assert.equal(requests.get("/wp-json/wp/v2/media?per_page=1"), 1);
+  const images = await Promise.all(
+    Array.from({ length: 3 }, async () => {
+      const image = await fetch(photos[0].source_url);
+      assert.equal(image.headers.get("content-type"), "image/jpeg");
+      return Buffer.from(await image.arrayBuffer());
+    }),
+  );
+  for (const image of images) assert.deepEqual(image, jpeg);
+  assert.deepEqual(
+    Buffer.from(await (await fetch(photos[0].source_url)).arrayBuffer()),
+    jpeg,
+  );
+  assert.equal(requests.get("/photo.jpg"), 1);
+  assert.equal((await fetch(`${origin}/retry.jpg`)).status, 502);
+  assert.deepEqual(
+    Buffer.from(await (await fetch(`${origin}/retry.jpg`)).arrayBuffer()),
+    jpeg,
+  );
+  assert.equal(requests.get("/retry.jpg"), 2);
+  assert.equal(
+    (await fetch(`${origin}/wp-json/wp/v2/media?invalid=1`)).status,
+    502,
+  );
+  assert.deepEqual(
+    await (await fetch(`${origin}/wp-json/wp/v2/media?invalid=1`)).json(),
+    photos,
+  );
+  assert.equal(requests.get("/wp-json/wp/v2/media?invalid=1"), 2);
   assert.equal((await fetch(`${origin}/unlisted.jpg`)).status, 404);
+  assert.equal(requests.has("/unlisted.jpg"), false);
 });

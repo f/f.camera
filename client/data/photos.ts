@@ -1,6 +1,6 @@
 import { contentQueryOptions } from "@spacefast/zero/client";
 import { sortPhotosNewestFirst } from "../lib/photo-dates.js";
-import type { CaptionPart, Photo, PhotoLocation, SampleDetails, WpMedia } from "./types";
+import type { Photo, PhotoLocation, SampleDetails, WpMedia } from "./types";
 
 let sampleRead: Promise<Record<string, SampleDetails>> | null = null;
 
@@ -79,6 +79,7 @@ export function photoNote(value: unknown): string {
 function normalizePhoto(
   media: WpMedia,
   sampleDetails: Record<string, SampleDetails>,
+  captions: Record<string, string>,
 ): Photo | null {
   const src = safeUrl(media?.source_url);
   if (!src) return null;
@@ -103,8 +104,9 @@ function normalizePhoto(
     width: details.width,
     height: details.height,
     title: plainText(media.title?.rendered),
-    caption: media.caption?.rendered || "",
-    note: photoNote(media.description?.rendered),
+    // WordPress may generate caption.rendered from Description when Caption is empty.
+    note: photoNote(media.caption?.raw ?? captions[String(media.id)] ?? ""),
+    description: photoNote(media.description?.rendered),
     alt: plainText(media.alt_text),
     date: media.date || "",
     dateGmt: media.date_gmt || "",
@@ -117,33 +119,16 @@ function normalizePhoto(
 export function normalizePhotos(
   media: WpMedia[],
   sampleDetails: Record<string, SampleDetails>,
+  captions: Record<string, string> = {},
 ): Photo[] {
   const photos = media
-    .map((item) => normalizePhoto(item, sampleDetails))
+    .map((item) => normalizePhoto(item, sampleDetails, captions))
     .filter((photo): photo is Photo => photo !== null);
   return sortPhotosNewestFirst(photos);
 }
 
 export function photoTitle(photo: Photo, index: number): string {
   return photo.title || `Photograph ${String(index + 1).padStart(2, "0")}`;
-}
-
-export function captionParts(value: string): CaptionPart[] {
-  const source = new DOMParser().parseFromString(value, "text/html").body;
-  const parts: CaptionPart[] = [];
-  function walk(node: Node, href?: string) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      parts.push({ text: node.textContent || "", ...(href ? { href } : {}) });
-      return;
-    }
-    if (!(node instanceof Element)) return;
-    if (["SCRIPT", "STYLE", "IFRAME", "OBJECT"].includes(node.tagName)) return;
-    const link = node.tagName === "A" ? safeUrl(node.getAttribute("href")) || undefined : href;
-    for (const child of node.childNodes) walk(child, link);
-    if (["BR", "P", "DIV"].includes(node.tagName)) parts.push({ text: " " });
-  }
-  for (const node of source.childNodes) walk(node);
-  return parts;
 }
 
 export function locationMap(location: PhotoLocation | null | undefined) {

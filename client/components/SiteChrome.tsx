@@ -1,4 +1,5 @@
 import { ApertureButton } from "./ApertureLogo";
+import { ExternalLinkIcon } from "./ExternalLinkIcon";
 
 export function SiteHeader() {
   return (
@@ -11,7 +12,7 @@ export function SiteHeader() {
       </div>
       <nav class="profile-links" aria-label="Find me online">
         <a class="profile-link" href="https://fka.dev" target="_blank" rel="noopener noreferrer">
-          fka.dev <span aria-hidden="true">↗</span>
+          fka.dev <ExternalLinkIcon />
         </a>
         <a
           class="profile-link"
@@ -20,7 +21,7 @@ export function SiteHeader() {
           rel="noopener noreferrer"
           aria-label="Instagram @fkadev"
         >
-          @fkadev <span aria-hidden="true">↗</span>
+          @fkadev <ExternalLinkIcon />
         </a>
       </nav>
     </header>
@@ -89,14 +90,14 @@ export function SiteFooter() {
     <footer class="site-footer">
       <div class="footer-about">
         <a href="https://fka.dev" target="_blank" rel="noopener noreferrer">
-          Fatih Kadir Akın <span aria-hidden="true">↗</span>
+          Fatih Kadir Akın <ExternalLinkIcon />
         </a>
         <a href="https://www.instagram.com/fkadev/" target="_blank" rel="noopener noreferrer">
-          Instagram · @fkadev <span aria-hidden="true">↗</span>
+          Instagram · @fkadev <ExternalLinkIcon />
         </a>
       </div>
       <a href="https://spacefast.com" target="_blank" rel="noopener noreferrer">
-        Made with Spacefast <span aria-hidden="true">↗</span>
+        Made with Spacefast <ExternalLinkIcon />
       </a>
     </footer>
   );

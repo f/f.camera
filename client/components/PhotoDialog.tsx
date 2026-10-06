@@ -1,26 +1,11 @@
 import type { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { readPhotoMetadata } from "../lib/photo-metadata.js";
-import { captionParts, locationMap, photoTitle, safeUrl } from "../data/photos";
+import { createPhotoSwipe } from "../lib/photo-swipe.js";
+import { locationMap, photoTitle, safeUrl } from "../data/photos";
 import type { Photo, PhotoLocation, PhotoMetadata } from "../data/types";
 import { PhotoImage } from "./PhotoImage";
-
-function PhotoCredit({ caption }: { caption: string }) {
-  const parts = useMemo(() => captionParts(caption), [caption]);
-  return (
-    <div id="lightbox-credit">
-      {parts.map((part, index) =>
-        part.href ? (
-          <a key={index} href={part.href} target="_blank" rel="noopener noreferrer">
-            {part.text}
-          </a>
-        ) : (
-          part.text
-        ),
-      )}
-    </div>
-  );
-}
+import { ExternalLinkIcon } from "./ExternalLinkIcon";
 
 export function LocationMap({
   location,
@@ -63,7 +48,7 @@ export function LocationMap({
               rel="noopener noreferrer"
               aria-label={`Open the map for ${title} on OpenStreetMap`}
             >
-              Open map ↗
+              Open map <ExternalLinkIcon />
             </a>
             <a
               href="https://www.openstreetmap.org/copyright"
@@ -143,10 +128,16 @@ export function PhotoDetails({
           : "Camera settings are not included in this file.";
 
   return (
-    <aside ref={detailsRef} class="photo-details" aria-label="Photograph details">
+    <aside ref={detailsRef} class="photo-details" aria-label="Photograph details" tabIndex={0}>
       <div class="lightbox-caption">
         <h2 id="lightbox-title">{title}</h2>
-        <PhotoCredit caption={photo.caption} />
+        {photo.note && (
+          <section class="photo-note-section" aria-label="Photo note">
+            <div class={`photo-note photo-note--${(photo.id % 4) + 1} photo-note--detail`}>
+              <p class="photo-note-text">{photo.note}</p>
+            </div>
+          </section>
+        )}
       </div>
       <section class="detail-section" aria-labelledby="settings-heading">
         <h3 id="settings-heading">Photo details</h3>
@@ -171,7 +162,7 @@ export function PhotoDetails({
             target="_blank"
             rel="noopener noreferrer"
           >
-            Details from the photo source ↗
+            Details from the photo source <ExternalLinkIcon />
           </a>
         )}
       </section>
@@ -200,8 +191,17 @@ export function PhotoDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLElement>(null);
+  const swipe = useMemo(() => createPhotoSwipe(), []);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0);
   const open = photo !== null;
   const title = photo ? photoTitle(photo, index) : "";
+  const viewportScale = () => window.visualViewport?.scale ?? 1;
+  const movePhoto = (direction: number) => {
+    if (count < 2) return;
+    setSlideDirection(direction);
+    onMove(direction);
+  };
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
@@ -210,6 +210,9 @@ export function PhotoDialog({
     else if (!open && dialog.open) dialog.close();
   }, [open]);
   useLayoutEffect(() => {
+    swipe.cancel();
+    setDragOffset(0);
+    if (!photo) setSlideDirection(0);
     if (contentRef.current) contentRef.current.scrollTop = 0;
     if (detailsRef.current) detailsRef.current.scrollTop = 0;
   }, [photo?.id]);
@@ -224,11 +227,11 @@ export function PhotoDialog({
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") {
           event.preventDefault();
-          onMove(1);
+          movePhoto(1);
         }
         if (event.key === "ArrowLeft") {
           event.preventDefault();
-          onMove(-1);
+          movePhoto(-1);
         }
       }}
     >
@@ -247,7 +250,7 @@ export function PhotoDialog({
               type="button"
               aria-label="Previous photograph"
               disabled={count < 2}
-              onClick={() => onMove(-1)}
+              onClick={() => movePhoto(-1)}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m14 6-6 6 6 6" />
@@ -259,7 +262,7 @@ export function PhotoDialog({
               type="button"
               aria-label="Next photograph"
               disabled={count < 2}
-              onClick={() => onMove(1)}
+              onClick={() => movePhoto(1)}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="m10 6 6 6-6 6" />
@@ -281,10 +284,48 @@ export function PhotoDialog({
         </header>
         {photo && (
           <div ref={contentRef} class="lightbox-content">
-            <div class="lightbox-image-wrap">
-              <PhotoImage photo={photo} alt={photo.alt || title} mode="viewer" />
+            <div
+              class="lightbox-image-wrap"
+              onTouchStart={(event) => {
+                if (count < 2) return;
+                swipe.begin(event.touches, viewportScale());
+                setSlideDirection(0);
+                setDragOffset(0);
+              }}
+              onTouchMove={(event) => {
+                const offset = swipe.move(event.touches, viewportScale());
+                setDragOffset(offset);
+              }}
+              onTouchEnd={(event) => {
+                const direction = swipe.end(
+                  event.changedTouches,
+                  event.touches.length,
+                  viewportScale(),
+                );
+                setDragOffset(0);
+                if (direction) movePhoto(direction);
+              }}
+              onTouchCancel={() => {
+                swipe.cancel();
+                setDragOffset(0);
+              }}
+            >
+              <div
+                key={photo.id}
+                class="lightbox-image-slide"
+                data-dragging={dragOffset !== 0 ? "true" : undefined}
+                data-slide={slideDirection > 0 ? "next" : slideDirection < 0 ? "previous" : undefined}
+                style={{ "--swipe-offset": `${dragOffset}px` }}
+              >
+                <PhotoImage photo={photo} alt={photo.alt || title} mode="viewer" />
+              </div>
             </div>
-            <PhotoDetails key={photo.id} detailsRef={detailsRef} photo={photo} title={title} />
+            <PhotoDetails
+              key={photo.id}
+              detailsRef={detailsRef}
+              photo={photo}
+              title={title}
+            />
           </div>
         )}
       </div>

@@ -1,10 +1,12 @@
 import { useLayoutEffect, useRef } from "preact/hooks";
 import { PhotoImage } from "./PhotoImage";
+import type { PostcardSource } from "./PhotoPostcard";
 import { photoDate } from "../lib/photo-dates.js";
 import { photoTitle } from "../data/photos";
 import type { Photo } from "../data/types";
 
 type OpenPhoto = (photo: Photo, opener: HTMLButtonElement) => void;
+type OpenPostcard = (photo: Photo, source: PostcardSource) => void;
 
 export function GalleryState({
   heading,
@@ -28,13 +30,20 @@ export function GalleryState({
   );
 }
 
-function PhotoCard({ photo, index, onOpen }: { photo: Photo; index: number; onOpen: OpenPhoto }) {
+function PhotoCard({ photo, index, onOpen, onPostcard }: {
+  photo: Photo;
+  index: number;
+  onOpen: OpenPhoto;
+  onPostcard: OpenPostcard;
+}) {
+  const imageButtonRef = useRef<HTMLButtonElement>(null);
   const title = photoTitle(photo, index);
   const date = photoDate(photo);
   const noteId = `photo-note-${photo.id}`;
   return (
     <figure class="photo" style={{ "--photo-index": index }}>
       <button
+        ref={imageButtonRef}
         class="photo-open"
         type="button"
         aria-label={`Open ${title}`}
@@ -55,7 +64,28 @@ function PhotoCard({ photo, index, onOpen }: { photo: Photo; index: number; onOp
         )}
       </button>
       <figcaption class="photo-caption">
-        <h3 class="photo-title">{title}</h3>
+        <h3 class="photo-title">
+          {photo.description ? (
+            <button
+              class="postcard-trigger"
+              type="button"
+              aria-haspopup="dialog"
+              onClick={(event) => {
+                const image = imageButtonRef.current;
+                if (!image) return;
+                onPostcard(photo, {
+                  rect: image.getBoundingClientRect(),
+                  image,
+                  trigger: event.currentTarget,
+                  previewSrc: image.querySelector("img")?.currentSrc || photo.src,
+                });
+              }}
+            >
+              {title}
+              <span class="sr-only"> — read the postcard</span>
+            </button>
+          ) : title}
+        </h3>
         {date.iso && (
           <time
             class="photo-date"
@@ -70,7 +100,11 @@ function PhotoCard({ photo, index, onOpen }: { photo: Photo; index: number; onOp
   );
 }
 
-export function PhotoGallery({ photos, onOpen }: { photos: Photo[]; onOpen: OpenPhoto }) {
+export function PhotoGallery({ photos, onOpen, onPostcard }: {
+  photos: Photo[];
+  onOpen: OpenPhoto;
+  onPostcard: OpenPostcard;
+}) {
   const galleryRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const gallery = galleryRef.current;
@@ -121,7 +155,7 @@ export function PhotoGallery({ photos, onOpen }: { photos: Photo[]; onOpen: Open
       aria-busy="false"
     >
       {photos.map((photo, index) => (
-        <PhotoCard key={photo.id} photo={photo} index={index} onOpen={onOpen} />
+        <PhotoCard key={photo.id} photo={photo} index={index} onOpen={onOpen} onPostcard={onPostcard} />
       ))}
     </div>
   );

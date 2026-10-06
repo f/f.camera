@@ -3,21 +3,29 @@ import { createPortal } from "preact/compat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { GalleryState, PhotoGallery } from "./components/Gallery";
 import { PhotoDialog } from "./components/PhotoDialog";
+import { PhotoPostcard, type PostcardSource } from "./components/PhotoPostcard";
 import { PersonalIntro, SiteFooter, SiteHeader } from "./components/SiteChrome";
-import { createPhotosQuery, loadSampleDetails, normalizePhotos } from "./data/photos";
+import { createPhotosQuery, loadSampleDetails, normalizePhotos, photoTitle } from "./data/photos";
 import type { Photo, SampleDetails } from "./data/types";
 
 function Head() {
   if (typeof document === "undefined") return null;
   return createPortal(
     <>
-      <link rel="stylesheet" href="/style.css?v=aperture-logo-1" />
+      <link rel="stylesheet" href="/style.css?v=photo-postcard-3" />
       <link rel="icon" href="/assets/favicon.svg?v=aperture-logo-1" />
       <link
         rel="preload"
         href="/assets/manrope-regular.ttf"
         as="font"
         type="font/ttf"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href="/assets/caveat-variable.woff2"
+        as="font"
+        type="font/woff2"
         crossOrigin="anonymous"
       />
       <meta name="theme-color" content="#ffffff" />
@@ -29,9 +37,14 @@ function Head() {
 function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () => void }) {
   const query = useMemo(() => createPhotosQuery(attempt), [attempt]);
   const media = useQuery(query);
+  const captions = useQuery<Record<string, string>>("photoCaptions");
   const [samples, setSamples] = useState<Record<string, SampleDetails> | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [postcard, setPostcard] = useState<{
+    photo: Photo;
+    source: PostcardSource;
+  } | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -52,11 +65,11 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
   const photos = useMemo(() => {
     if (!Array.isArray(media) || samples === null) return null;
     try {
-      return normalizePhotos(media, samples);
+      return normalizePhotos(media, samples, captions);
     } catch {
       return null;
     }
-  }, [media, samples]);
+  }, [media, samples, captions]);
 
   const openPhoto = useCallback((photo: Photo, button: HTMLButtonElement) => {
     opener.current = button;
@@ -97,7 +110,11 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
 
   return (
     <>
-      <PhotoGallery photos={photos} onOpen={openPhoto} />
+      <PhotoGallery
+        photos={photos}
+        onOpen={openPhoto}
+        onPostcard={(photo, source) => setPostcard({ photo, source })}
+      />
       <PhotoDialog
         photo={selected}
         index={selectedIndex}
@@ -105,6 +122,14 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
         onMove={movePhoto}
         onClose={closePhoto}
       />
+      {postcard && (
+        <PhotoPostcard
+          photo={postcard.photo}
+          title={photoTitle(postcard.photo, photos.findIndex((photo) => photo.id === postcard.photo.id))}
+          source={postcard.source}
+          onClose={() => setPostcard(null)}
+        />
+      )}
     </>
   );
 }

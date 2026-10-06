@@ -15,7 +15,7 @@ export interface WpMedia {
     sizes?: Record<string, WpImageSize>;
   };
   title?: { rendered?: string };
-  caption?: { rendered?: string };
+  caption?: { raw?: string; rendered?: string };
   description?: { rendered?: string };
   alt_text?: string;
   date?: string;
@@ -59,17 +59,12 @@ export interface Photo {
   width?: number;
   height?: number;
   title: string;
-  caption: string;
   note: string;
+  description: string;
   alt: string;
   date: string;
   dateGmt: string;
   wpMeta: Record<string, unknown>;
   originalSrc: string;
   sample: SampleDetails | null;
-}
-
-export interface CaptionPart {
-  text: string;
-  href?: string;
 }

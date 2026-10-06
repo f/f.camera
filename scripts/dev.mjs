@@ -14,6 +14,7 @@ const types = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
   ".ttf": "font/ttf",
+  ".woff2": "font/woff2",
   ".svg": "image/svg+xml",
   ".txt": "text/plain; charset=utf-8",
 };
@@ -53,6 +54,13 @@ export async function createDevServer({
           ),
         ));
   const imagePaths = new Set();
+  const remoteCache = new Map();
+  const pendingReads = new Map();
+  let cachedBytes = 0;
+  const forget = (key) => {
+    cachedBytes -= remoteCache.get(key).file.bytes.length;
+    remoteCache.delete(key);
+  };
   const runtime = await startZeroRuntime(root, { watch });
   const runtimeHeaders = (request) => ({
     ...request.headers,
@@ -91,7 +99,7 @@ export async function createDevServer({
     });
   }
 
-  async function remote(url, maximum = 20 * 1024 * 1024) {
+  async function fetchRemote(url, maximum) {
     const response = await fetch(url, {
       redirect: "error",
       signal: AbortSignal.timeout(20000),
@@ -114,6 +122,39 @@ export async function createDevServer({
       bytes: Buffer.concat(chunks),
       type: response.headers.get("content-type") || "application/octet-stream",
     };
+  }
+
+  async function remote(
+    url,
+    { maximum = 20 * 1024 * 1024, maxAge = 10 * 60 * 1000, validate } = {},
+  ) {
+    const key = url.href;
+    for (const [entryKey, entry] of remoteCache) {
+      if (entry.expires <= Date.now()) forget(entryKey);
+    }
+    if (remoteCache.has(key)) return remoteCache.get(key).file;
+    if (pendingReads.has(key)) return pendingReads.get(key);
+    const pending = (async () => {
+      const file = await fetchRemote(url, maximum);
+      validate?.(file);
+      // Bound both image storage and tiny metadata entries in this preview only.
+      while (
+        remoteCache.size &&
+        (cachedBytes + file.bytes.length > 64 * 1024 * 1024 ||
+          remoteCache.size >= 128)
+      ) {
+        forget(remoteCache.keys().next().value);
+      }
+      remoteCache.set(key, { file, expires: Date.now() + maxAge });
+      cachedBytes += file.bytes.length;
+      return file;
+    })();
+    pendingReads.set(key, pending);
+    try {
+      return await pending;
+    } finally {
+      pendingReads.delete(key);
+    }
   }
 
   const server = createServer(async (request, response) => {
@@ -189,7 +230,14 @@ export async function createDevServer({
             (
               await remote(
                 new URL(`/wp-json/wp/v2/media${url.search}`, origin),
-                1024 * 1024,
+                {
+                  maximum: 1024 * 1024,
+                  maxAge: 45 * 1000,
+                  validate: (file) => {
+                    if (!Array.isArray(JSON.parse(file.bytes)))
+                      throw new Error("Expected a public WordPress media list.");
+                  },
+                },
               )
             ).bytes,
           );

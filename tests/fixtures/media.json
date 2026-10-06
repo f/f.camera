@@ -10,7 +10,8 @@
       "rendered": ""
     },
     "caption": {
-      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/calm-blue-ocean-with-cloudy-sky-and-distant-mountains-XBLsvPjD20c\">engin akyurt</a> on Unsplash.</p>\n"
+      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/calm-blue-ocean-with-cloudy-sky-and-distant-mountains-XBLsvPjD20c\">engin akyurt</a> on Unsplash.</p>\n",
+      "raw": "<p>Photo by <a href=\"https://unsplash.com/photos/calm-blue-ocean-with-cloudy-sky-and-distant-mountains-XBLsvPjD20c\">engin akyurt</a> on Unsplash.</p>\n"
     },
     "alt_text": "A calm blue sea stretches toward distant mountains beneath a cloudy sky.",
     "media_details": {
@@ -94,7 +95,8 @@
       "rendered": ""
     },
     "caption": {
-      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/sand-dunes-with-smooth-and-rippled-textures-bixyg_ipb88\">Max Böhme</a> on Unsplash.</p>\n"
+      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/sand-dunes-with-smooth-and-rippled-textures-bixyg_ipb88\">Max Böhme</a> on Unsplash.</p>\n",
+      "raw": "<p>Photo by <a href=\"https://unsplash.com/photos/sand-dunes-with-smooth-and-rippled-textures-bixyg_ipb88\">Max Böhme</a> on Unsplash.</p>\n"
     },
     "alt_text": "Fine wind-shaped ripples cross pale sand dunes at Råbjerg Mile, Denmark.",
     "media_details": {
@@ -178,7 +180,8 @@
       "rendered": ""
     },
     "caption": {
-      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/misty-mountain-landscape-with-peaks-emerging-from-dense-fog-C55eb98CIT0\">Rowan Heuvel</a> on Unsplash.</p>\n"
+      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/misty-mountain-landscape-with-peaks-emerging-from-dense-fog-C55eb98CIT0\">Rowan Heuvel</a> on Unsplash.</p>\n",
+      "raw": "<p>Photo by <a href=\"https://unsplash.com/photos/misty-mountain-landscape-with-peaks-emerging-from-dense-fog-C55eb98CIT0\">Rowan Heuvel</a> on Unsplash.</p>\n"
     },
     "alt_text": "Mountain peaks emerge from dense morning fog at Bromo in Indonesia.",
     "media_details": {
@@ -262,7 +265,8 @@
       "rendered": "<p>Rain makes everything<br />\nlook different.</p>\n"
     },
     "caption": {
-      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/city-street-at-night-with-reflections-on-wet-pavement-QgM0UH5vH8M\">ayumi kubo</a> on Unsplash.</p>\n"
+      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/city-street-at-night-with-reflections-on-wet-pavement-QgM0UH5vH8M\">ayumi kubo</a> on Unsplash.</p>\n",
+      "raw": "<p>Photo by <a href=\"https://unsplash.com/photos/city-street-at-night-with-reflections-on-wet-pavement-QgM0UH5vH8M\">ayumi kubo</a> on Unsplash.</p>\n"
     },
     "alt_text": "Night lights reflect across wet pavement on a Tokyo street.",
     "media_details": {
@@ -346,7 +350,8 @@
       "rendered": "<p>Light, shadows,<br />\nand a little quiet.</p>\n"
     },
     "caption": {
-      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/modern-architectural-passage-with-sunlight-and-shadows-XnAubvnRnYU\">Anastashia Nadya Angkasa</a> on Unsplash.</p>\n"
+      "rendered": "<p>Photo by <a href=\"https://unsplash.com/photos/modern-architectural-passage-with-sunlight-and-shadows-XnAubvnRnYU\">Anastashia Nadya Angkasa</a> on Unsplash.</p>\n",
+      "raw": "<p>Photo by <a href=\"https://unsplash.com/photos/modern-architectural-passage-with-sunlight-and-shadows-XnAubvnRnYU\">Anastashia Nadya Angkasa</a> on Unsplash.</p>\n"
     },
     "alt_text": "Warm sunlight cuts through a dark concrete corridor in Japan.",
     "media_details": {
@@ -430,7 +435,8 @@
       "rendered": ""
     },
     "caption": {
-      "rendered": "<p>Photo by Danny Rienecker on Unsplash. https://unsplash.com/photos/black-sand-beach-with-dramatic-cliffs-and-ocean-waves-uZ6Tup8EfDI</p>\n"
+      "rendered": "<p>Photo by Danny Rienecker on Unsplash. https://unsplash.com/photos/black-sand-beach-with-dramatic-cliffs-and-ocean-waves-uZ6Tup8EfDI</p>\n",
+      "raw": "<p>Photo by Danny Rienecker on Unsplash. https://unsplash.com/photos/black-sand-beach-with-dramatic-cliffs-and-ocean-waves-uZ6Tup8EfDI</p>\n"
     },
     "alt_text": "White waves meet a black volcanic beach beneath misty cliffs in Iceland.",
     "media_details": {
