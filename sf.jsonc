@@ -1,0 +1,15 @@
+{
+  "$schema": "https://spacefast.com/schemas/sf.schema.json",
+  "name": "f.camera",
+  "build": {
+    "buildCommand": "node scripts/build-static.mjs",
+    "outputDirectory": "dist"
+  },
+  "runtime": {
+    "kind": "zero",
+    "server": "server/index.ts",
+    // No custom Zero client is needed: index.html and app.js are the frontend.
+    // This optional conventional entry can stay absent for a server-only capsule.
+    "client": "client/index.tsx"
+  }
+}
