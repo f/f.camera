@@ -11,7 +11,7 @@ function Head() {
   if (typeof document === "undefined") return null;
   return createPortal(
     <>
-      <link rel="stylesheet" href="/style.css?v=aperture-loading-1" />
+      <link rel="stylesheet" href="/style.css?v=aperture-loading-2" />
       <link rel="icon" href="/assets/favicon.svg" />
       <link
         rel="preload"

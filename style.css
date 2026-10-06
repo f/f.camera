@@ -253,12 +253,21 @@ main {
   stroke-width: 0.7;
   opacity: 0.3;
 }
-.aperture-blade {
+.aperture-blades {
   fill: currentColor;
+}
+.aperture-iris {
+  transform-origin: 0 0;
+  animation: aperture-breathe 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.aperture-opening {
+  fill: var(--loading-surface);
+}
+.aperture-seam {
+  fill: none;
   stroke: var(--loading-surface);
-  stroke-width: 0.8;
-  transform-origin: 24px 4px;
-  animation: aperture-breathe 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  stroke-width: 0.65;
+  vector-effect: non-scaling-stroke;
 }
 .photo-loading-text {
   max-width: 30ch;
@@ -276,10 +285,10 @@ main {
 @keyframes aperture-breathe {
   0%,
   100% {
-    transform: rotate(-8deg);
+    transform: rotate(-12deg) scale(0.65);
   }
   50% {
-    transform: rotate(9deg);
+    transform: rotate(12deg) scale(1.65);
   }
 }
 .photo-caption {

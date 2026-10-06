@@ -18,12 +18,22 @@ function Aperture({ id }: { id: string }) {
         </clipPath>
       </defs>
       <circle class="aperture-ring" cx="24" cy="24" r="21" />
-      <g clipPath={`url(#${id})`}>
-        {[0, 60, 120, 180, 240, 300].map((angle) => (
-          <g key={angle} transform={`rotate(${angle} 24 24)`}>
-            <path class="aperture-blade" d="M24 4H48V31H31Z" />
+      <g clip-path={`url(#${id})`}>
+        <circle class="aperture-blades" cx="24" cy="24" r="19" />
+        <g transform="translate(24 24)">
+          <g class="aperture-iris">
+            <path class="aperture-opening" d="M6 0 3 5.196-3 5.196-6 0-3-5.196 3-5.196Z" />
+            {/* Extend each hexagon edge to the rim to form six interlocking blades. */}
+            {[0, 60, 120, 180, 240, 300].map((angle) => (
+              <path
+                key={angle}
+                class="aperture-seam"
+                d="M6 0 36 51.96"
+                transform={`rotate(${angle})`}
+              />
+            ))}
           </g>
-        ))}
+        </g>
       </g>
     </svg>
   );
