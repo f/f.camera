@@ -115,26 +115,106 @@ a:focus-visible {
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -1px;
+  min-height: 44px;
 }
 .brand-icon {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  flex: 0 0 auto;
 }
-.brand-icon svg {
-  width: 23px;
-  height: 23px;
+.aperture-logo {
+  --logo-surface: #fff;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.logo-rim {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.4;
+  stroke-width: 0.8;
 }
-.brand-icon svg circle:last-child {
+.logo-blades {
   fill: currentColor;
-  stroke: 0;
+}
+.logo-dot {
+  fill: #37b56a;
+  transform-origin: 24px 24px;
+  filter: blur(calc((1 - var(--logo-open, 0)) * 1.1px));
+  opacity: calc(0.62 + var(--logo-open, 0) * 0.38);
+  transform: scale(calc(0.96 + var(--logo-open, 0) * 0.04));
+  transition:
+    filter 300ms ease,
+    opacity 300ms ease,
+    transform 300ms ease;
+  animation: var(--logo-focus-animation, none);
+}
+.logo-iris {
+  transform-origin: 24px 24px;
+  transform: rotate(calc(var(--logo-open, 0) * 14deg))
+    scale(calc(1 + var(--logo-open, 0) * 0.3));
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.logo-opening {
+  fill: var(--logo-surface);
+}
+.logo-seam {
+  fill: none;
+  stroke: var(--logo-surface);
+  stroke-width: 0.75;
+  vector-effect: non-scaling-stroke;
+}
+.brand:has(:focus-visible) {
+  --logo-open: 1;
+  --logo-focus-animation: logo-focus 720ms both;
+}
+@media (hover: hover) {
+  .brand:hover {
+    --logo-open: 1;
+    --logo-focus-animation: logo-focus 720ms both;
+  }
+}
+.logo-iris--shutter {
+  animation: logo-shutter 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes logo-shutter {
+  0%,
+  100% {
+    transform: rotate(calc(var(--logo-open, 0) * 14deg))
+      scale(calc(1 + var(--logo-open, 0) * 0.3));
+  }
+  24%,
+  38% {
+    transform: rotate(-18deg) scale(0);
+  }
+  74% {
+    transform: rotate(calc(var(--logo-open, 0) * 14deg + 2deg))
+      scale(calc(1.03 + var(--logo-open, 0) * 0.3));
+  }
+}
+@keyframes logo-focus {
+  0% {
+    filter: blur(1.1px);
+    transform: scale(0.96);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  42% {
+    filter: blur(0.1px);
+    transform: translateY(-0.35px) scale(1.08);
+    animation-timing-function: ease-in-out;
+  }
+  68% {
+    filter: blur(0.2px);
+    transform: translateY(0.12px) scale(0.985);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
 }
 .profile-link {
   font-size: 12px;
@@ -626,9 +706,7 @@ dialog::backdrop {
     gap: 9px;
   }
   .brand-icon {
-    width: 29px;
-    height: 29px;
-    border-radius: 9px;
+    padding: 4px;
   }
   .gallery {
     --masonry-gap: 30px;

@@ -1,15 +1,14 @@
+import { ApertureButton } from "./ApertureLogo";
+
 export function SiteHeader() {
   return (
     <header class="site-header">
-      <a class="brand" href="/" aria-label="f.camera home">
-        <span class="brand-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="7.5" />
-            <circle cx="12" cy="12" r="2.5" />
-          </svg>
-        </span>
-        f.camera
-      </a>
+      <div class="brand">
+        <ApertureButton />
+        <a href="/" aria-label="f.camera home">
+          f.camera
+        </a>
+      </div>
       <nav class="profile-links" aria-label="Find me online">
         <a class="profile-link" href="https://fka.dev" target="_blank" rel="noopener noreferrer">
           fka.dev <span aria-hidden="true">↗</span>

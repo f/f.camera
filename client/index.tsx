@@ -11,8 +11,8 @@ function Head() {
   if (typeof document === "undefined") return null;
   return createPortal(
     <>
-      <link rel="stylesheet" href="/style.css?v=aperture-loading-2" />
-      <link rel="icon" href="/assets/favicon.svg" />
+      <link rel="stylesheet" href="/style.css?v=aperture-logo-1" />
+      <link rel="icon" href="/assets/favicon.svg?v=aperture-logo-1" />
       <link
         rel="preload"
         href="/assets/manrope-regular.ttf"
