@@ -1,36 +1,8 @@
 {
-  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/f-camera-iceland-shore.jpg": {
-    "takenOn": "2025-08-31",
-    "metadata": {
-      "camera": null,
-      "lens": null,
-      "aperture": null,
-      "focalLength": null,
-      "iso": null,
-      "shutter": null,
-      "capturedAt": "31 Aug 2025"
-    },
-    "sourceUrl": "https://unsplash.com/photos/black-sand-beach-with-dramatic-cliffs-and-ocean-waves-uZ6Tup8EfDI",
-    "metadataSourceUrl": "https://images.unsplash.com/photo-1767648194995-82f0ec8f8e88?fm=json",
-    "location": {
-      "latitude": 63.4044262,
-      "longitude": -19.0587987,
-      "label": "Reynisfjara Beach, Iceland",
-      "precision": "approximate",
-      "source": "https://unsplash.com/photos/black-sand-beach-with-dramatic-cliffs-and-ocean-waves-uZ6Tup8EfDI",
-      "bounds": [
-        -19.1032237,
-        63.4010252,
-        -19.0351224,
-        63.407764
-      ],
-      "geodataSource": "https://www.openstreetmap.org/relation/13989221"
-    }
-  },
-  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/f-camera-concrete-light.jpg": {
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0035.jpg": {
     "takenOn": null,
     "metadata": {
-      "camera": null,
+      "camera": "FUJIFILM X-S20",
       "lens": null,
       "aperture": null,
       "focalLength": null,
@@ -38,120 +10,137 @@
       "shutter": null,
       "capturedAt": null
     },
-    "sourceUrl": "https://unsplash.com/photos/modern-architectural-passage-with-sunlight-and-shadows-XnAubvnRnYU",
-    "metadataSourceUrl": "https://images.unsplash.com/photo-1773549760309-9ed383225d68?fm=json",
-    "location": {
-      "latitude": 35.1171916,
-      "longitude": 135.9442542,
-      "label": "Setre Marina Biwako, Moriyama, Japan",
-      "precision": "approximate",
-      "source": "https://unsplash.com/photos/modern-architectural-passage-with-sunlight-and-shadows-XnAubvnRnYU",
-      "bounds": [
-        135.9441327,
-        35.1169776,
-        135.9443647,
-        35.1175267
-      ],
-      "geodataSource": "https://www.openstreetmap.org/way/826075933"
-    }
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": null
   },
-  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/f-camera-tokyo-rain.jpg": {
-    "takenOn": "2026-04-04",
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0035-scaled.jpg": {
+    "takenOn": null,
     "metadata": {
-      "camera": "SONY ILCE-7CM2",
-      "lens": "24-70mm F2.8 DG DN | Art 019",
-      "aperture": "f/2.8",
-      "focalLength": "33.1 mm",
-      "iso": "1600",
-      "shutter": "1/30 s",
-      "capturedAt": "4 Apr 2026"
-    },
-    "sourceUrl": "https://unsplash.com/photos/city-street-at-night-with-reflections-on-wet-pavement-QgM0UH5vH8M",
-    "metadataSourceUrl": "https://images.unsplash.com/photo-1775315811739-92a7ab929356?fm=json",
-    "location": {
-      "latitude": 35.7054109,
-      "longitude": 139.7733376,
-      "label": "Ueno 3-chome, Tokyo, Japan",
-      "precision": "approximate",
-      "source": "https://unsplash.com/photos/city-street-at-night-with-reflections-on-wet-pavement-QgM0UH5vH8M",
-      "bounds": [
-        139.7720003,
-        35.7027975,
-        139.7745935,
-        35.7079898
-      ],
-      "geodataSource": "https://www.openstreetmap.org/relation/15920271"
-    }
-  },
-  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/f-camera-mountain-mist.jpg": {
-    "takenOn": "2025-10-23",
-    "metadata": {
-      "camera": "Canon EOS R5m2",
-      "lens": "RF70-200mm F2.8 L IS USM Z",
-      "aperture": "f/8",
-      "focalLength": "108 mm",
-      "iso": "100",
-      "shutter": "1/6 s",
-      "capturedAt": "23 Oct 2025"
-    },
-    "sourceUrl": "https://unsplash.com/photos/misty-mountain-landscape-with-peaks-emerging-from-dense-fog-C55eb98CIT0",
-    "metadataSourceUrl": "https://images.unsplash.com/photo-1781813745733-36af0d892101?fm=json",
-    "location": {
-      "latitude": -8.0277157,
-      "longitude": 112.9477814,
-      "label": "Bromo Tengger Semeru National Park, Indonesia",
-      "precision": "approximate",
-      "source": "https://unsplash.com/photos/misty-mountain-landscape-with-peaks-emerging-from-dense-fog-C55eb98CIT0",
-      "bounds": [
-        112.7954882,
-        -8.193268,
-        113.1268805,
-        -7.8614608
-      ],
-      "geodataSource": "https://www.openstreetmap.org/relation/7731898"
-    }
-  },
-  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/f-camera-sand-ripples.jpg": {
-    "takenOn": "2026-05-03",
-    "metadata": {
-      "camera": "SONY ILCE-7RM2",
-      "lens": "FE 28-70mm F3.5-5.6 OSS",
-      "aperture": "f/18",
-      "focalLength": "55 mm",
-      "iso": "100",
-      "shutter": "1/80 s",
-      "capturedAt": "3 May 2026"
-    },
-    "sourceUrl": "https://unsplash.com/photos/sand-dunes-with-smooth-and-rippled-textures-bixyg_ipb88",
-    "metadataSourceUrl": "https://images.unsplash.com/photo-1780656094566-e760b59fbfaf?fm=json",
-    "location": {
-      "latitude": 57.647806,
-      "longitude": 10.4096111,
-      "label": "Råbjerg Mile, Denmark",
-      "precision": "approximate",
-      "source": "https://unsplash.com/photos/sand-dunes-with-smooth-and-rippled-textures-bixyg_ipb88",
-      "bounds": [
-        10.3908565,
-        57.6431559,
-        10.4167036,
-        57.6524507
-      ],
-      "geodataSource": "https://www.openstreetmap.org/way/32083357"
-    }
-  },
-  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/f-camera-blue-horizon.jpg": {
-    "takenOn": "2025-10-08",
-    "metadata": {
-      "camera": "FUJIFILM GFX100RF",
+      "camera": "FUJIFILM X-S20",
       "lens": null,
-      "aperture": "f/5.6",
-      "focalLength": "35 mm",
-      "iso": "80",
-      "shutter": "1/500 s",
-      "capturedAt": "8 Oct 2025"
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
     },
-    "sourceUrl": "https://unsplash.com/photos/calm-blue-ocean-with-cloudy-sky-and-distant-mountains-XBLsvPjD20c",
-    "metadataSourceUrl": "https://images.unsplash.com/photo-1771250851735-a2903de2d28d?fm=json",
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": null
+  },
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0040.jpg": {
+    "takenOn": null,
+    "metadata": {
+      "camera": "FUJIFILM X-S20",
+      "lens": null,
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
+    },
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": {
+      "latitude": 41.168152,
+      "longitude": 29.601454,
+      "label": "Üsküdar Caddesi, Şile, Istanbul",
+      "precision": "gps",
+      "source": "exif"
+    }
+  },
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0040-scaled.jpg": {
+    "takenOn": null,
+    "metadata": {
+      "camera": "FUJIFILM X-S20",
+      "lens": null,
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
+    },
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": {
+      "latitude": 41.168152,
+      "longitude": 29.601454,
+      "label": "Üsküdar Caddesi, Şile, Istanbul",
+      "precision": "gps",
+      "source": "exif"
+    }
+  },
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0045.jpg": {
+    "takenOn": null,
+    "metadata": {
+      "camera": "FUJIFILM X-S20",
+      "lens": null,
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
+    },
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": {
+      "latitude": 41.168152,
+      "longitude": 29.601454,
+      "label": "Üsküdar Caddesi, Şile, Istanbul",
+      "precision": "gps",
+      "source": "exif"
+    }
+  },
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0045-scaled.jpg": {
+    "takenOn": null,
+    "metadata": {
+      "camera": "FUJIFILM X-S20",
+      "lens": null,
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
+    },
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": {
+      "latitude": 41.168152,
+      "longitude": 29.601454,
+      "label": "Üsküdar Caddesi, Şile, Istanbul",
+      "precision": "gps",
+      "source": "exif"
+    }
+  },
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0071.jpg": {
+    "takenOn": null,
+    "metadata": {
+      "camera": "FUJIFILM X-S20",
+      "lens": null,
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
+    },
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
+    "location": null
+  },
+  "/__spacefast/content-media/d122ee24b9847f32050096d375b3afaa/2026/10/DSCF0071-scaled.jpg": {
+    "takenOn": null,
+    "metadata": {
+      "camera": "FUJIFILM X-S20",
+      "lens": null,
+      "aperture": null,
+      "focalLength": null,
+      "iso": null,
+      "shutter": null,
+      "capturedAt": null
+    },
+    "sourceUrl": null,
+    "metadataSourceUrl": null,
     "location": null
   }
 }
