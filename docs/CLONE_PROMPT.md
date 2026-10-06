@@ -17,7 +17,7 @@ My Spacefast space, if I already have one:
 
 Clone the repository into a new project and read its README. Keep its simple design, responsive masonry gallery, handwritten notes, and keyboard photo viewer. Replace the example name, bio, links, camera kit, page title, description, and branding with my details. Do not invent a camera model or personal details. Remove optional links I leave blank.
 
-Use Spacefast and Spacefast Zero as the project already does. The photos must live in my space's WordPress media library, with the frontend reading that space's same-origin media endpoint. Use a new content-managed space unless I named an existing one. Do not copy the example site's photo files or connect my site to f.camera's library.
+Keep the native Spacefast Zero JSX/Preact structure. Use reusable components, hooks, and Zero's contentQueryOptions/useQuery for WordPress media. Let Zero compile and mount the client. The photos must live in my space's WordPress media library, with the frontend reading that space's same-origin media endpoint. Use a new content-managed space unless I named an existing one. Do not copy the example site's photo files or connect my site to f.camera's library.
 
 Set sample-details.json to {} for my collection. Use the WordPress Title, Alternative text, and Caption fields for photo titles, accessible descriptions, and credits. Use Description for optional short handwritten notes. Keep newest-first ordering, honest date fallbacks, EXIF details when available, and OpenStreetMap locations when coordinates exist. Keep the font, library, and map attribution notices.
 

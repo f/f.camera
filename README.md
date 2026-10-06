@@ -8,18 +8,22 @@ The site has a responsive masonry gallery, small handwritten notes, and a photo 
 
 ## How it works
 
-The frontend is plain HTML, CSS, and JavaScript. A small Zero capsule in `server/index.ts` makes the space's built-in WordPress media collection publicly readable. The browser reads `/wp-json/wp/v2/media` on the same origin.
+The frontend is a JSX app built with Zero's native Preact runtime. `pages/index.tsx` declares the interactive home page and renders the app from `client/index.tsx`. Components and hooks manage the gallery, photo viewer, and metadata. Spacefast compiles and mounts the page; there is no separate frontend framework or bundler to configure.
+
+The gallery uses Zero's `contentQueryOptions` and `useQuery` to read the space's WordPress media. These hooks share Zero's query cache and lifecycle. A small capsule in `server/index.ts` declares the native media collection as publicly readable. It does not create a second photo database.
 
 Photos belong to the space's WordPress media library. They are not copied into this repository. Publishing a code change updates the theme; it does not replace the media library. The small image under `tests/fixtures/` is only an EXIF test fixture.
 
 | File | What it does |
 | --- | --- |
-| `index.html` | Page structure, bio, links, and camera kit |
+| `pages/index.tsx` | Native Zero client page for `/` |
+| `client/index.tsx` | Zero app entry and page composition |
+| `client/components/` | JSX components for the bio, gallery, photo viewer, and map |
+| `client/data/` | Typed WordPress query, photo normalization, and safe caption text |
+| `client/lib/` | Date selection, newest-first order, and original-image EXIF |
 | `style.css` | Layout, masonry spacing, notes, and photo viewer |
-| `app.js` | WordPress reads, gallery, notes, keyboard navigation, and maps |
-| `photo-dates.js` | Date selection and newest-first order |
-| `photo-metadata.js` | Reads EXIF from an original image when you open it |
 | `server/index.ts` | Zero capsule and public media collection |
+| `sf.jsonc` | Zero entries, page metadata, and public asset build |
 | `sample-details.json` | Sourced metadata for the example collection; no photo files |
 
 ## Run locally
@@ -33,7 +37,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173`. This preview serves the frontend and a small WordPress-shaped sample response. Sample image requests are read from the public f.camera media library, so displaying the photos and reading their EXIF requires an internet connection. The photos are not downloaded into the repository.
+Open `http://127.0.0.1:4173`. The development command starts the real `sf dev` runtime, which compiles and serves the JSX app. A local adapter supplies a small WordPress-shaped sample response. Sample image requests are read from the public f.camera media library, so displaying the photos and reading their EXIF requires an internet connection. The photos are not downloaded into the repository.
 
 To preview your own space's public media instead:
 
@@ -47,10 +51,11 @@ Run the checks and compile the Zero project:
 
 ```sh
 npm test
+npm run typecheck
 npm run build
 ```
 
-The local preview is a development helper, not a local WordPress installation. `npm run build` runs the real Spacefast Zero compiler. The `sf dev` command by itself does not provide the hosted WordPress media endpoint this frontend uses.
+The adapter only supplies the public media endpoint and image reads that a hosted WordPress site provides. The UI, client imports, and local runtime come from Zero. There is no local WordPress installation, so Content editing still happens on your Space. `npm run build` uses the same Zero compiler to create the deployment artifact.
 
 ## Manage photos
 
@@ -77,11 +82,11 @@ GPS locations show a marker on a small OpenStreetMap preview. Sourced locations 
 
 ## Make it yours
 
-Edit the bio, website, Instagram link, camera kit, page title, and description in `index.html`. Adjust colors, spacing, and note styles in `style.css`. Change the project name in `sf.jsonc` and `server/index.ts` when you create your own site.
+Edit the bio, website, Instagram link, and camera kit in the JSX components under `client/components/`. Set the page title and description in `sf.jsonc`. Adjust colors, spacing, and note styles in `style.css`. Change the project name in `sf.jsonc` and `server/index.ts` when you create your own site.
 
 For a new collection, set `sample-details.json` to `{}`. Its existing entries describe the example photos on f.camera and should not be applied to your photos. Upload your own images through your space's media library, with their titles, alt text, and credits.
 
-The page and JavaScript imports use `?v=` values to refresh cached assets. Update the affected values when you change frontend files.
+Zero builds the client bundle and its platform imports. The custom stylesheet is linked from the app's head component; update its `?v=` value when changing CSS.
 
 ## Publish from GitHub
 

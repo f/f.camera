@@ -74,7 +74,7 @@ function dated(timestamp, kind) {
   };
 }
 
-/** Dates already available in WordPress and the verified sample record; no image reads. */
+/** Dates from WordPress and the verified sample record; no image reads. */
 export function photoDate(photo, { mode = "taken" } = {}) {
   if (mode !== "uploaded") {
     const taken =

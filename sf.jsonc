@@ -1,15 +1,18 @@
 {
   "$schema": "https://spacefast.com/schemas/sf.schema.json",
   "name": "f.camera",
+  "meta": {
+    "title": "f.camera — photographs",
+    "favicon": "/assets/favicon.svg",
+    "description": "Photographs by humans, not AI. A personal photo collection by Fatih Kadir Akın, with a Fujifilm X-S20 and an iPhone camera.",
+  },
   "build": {
     "buildCommand": "node scripts/build-static.mjs",
-    "outputDirectory": "dist"
+    "outputDirectory": "dist",
   },
   "runtime": {
     "kind": "zero",
     "server": "server/index.ts",
-    // No custom Zero client is needed: index.html and app.js are the frontend.
-    // This optional conventional entry can stay absent for a server-only capsule.
-    "client": "client/index.tsx"
-  }
+    "client": "client/index.tsx",
+  },
 }

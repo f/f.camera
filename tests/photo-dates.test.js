@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { photoDate, sortPhotosNewestFirst } from '../photo-dates.js';
+import { photoDate, sortPhotosNewestFirst } from '../client/lib/photo-dates.js';
 
 test('capture precedence, uploaded mode, and honest date kinds', () => {
   const photo = { wpMeta: { created_timestamp: String(Date.UTC(2026, 4, 3, 14) / 1000) }, sample: { takenOn: '2025-08-31' }, dateGmt: '2026-10-06T14:33:57' };

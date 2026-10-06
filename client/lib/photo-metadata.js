@@ -1,3 +1,5 @@
+import { parse } from "exifr/dist/lite.esm.mjs";
+
 const MAX_ORIGINAL_BYTES = 20 * 1024 * 1024;
 const READ_TIMEOUT_MS = 20_000;
 const originalReads = new Map();
@@ -232,9 +234,8 @@ async function readOriginal(url) {
     const heif =
       bytes.length >= 12 &&
       String.fromCharCode(...bytes.subarray(4, 8)) === "ftyp";
-    // The bundled browser reader supports JPEG and HEIF (including AVIF).
+    // Read supported originals with the npm parser bundled by Zero.
     if (!jpeg && !heif) throw readFailure("unsupported");
-    const { parse } = await import("./assets/exifr.mjs");
     const exif = await parse(bytes, {
       reviveValues: false,
       xmp: false,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { normalizePhotoMetadata } from '../photo-metadata.js';
+import { normalizePhotoMetadata } from '../client/lib/photo-metadata.js';
 
 test('EXIF camera and rational exposure win while native image metadata fills missing fields', () => {
   const metadata = normalizePhotoMetadata({ wpMeta: { camera: 'Old camera', aperture: '4', focal_length: '50', iso: '0', shutter_speed: 2 } }, {
@@ -44,7 +44,7 @@ test('the bounded original reader parses actual JPEG EXIF and refuses oversized 
   const { createServer } = await import('node:http');
   const { readFile } = await import('node:fs/promises');
   const { once } = await import('node:events');
-  const { readPhotoMetadata } = await import('../photo-metadata.js');
+  const { readPhotoMetadata } = await import('../client/lib/photo-metadata.js');
   // Authored 269-byte JPEG/EXIF container with test tags, not a copied photograph.
   const bytes = await readFile(new URL('./fixtures/exif-gps.jpg', import.meta.url));
   const server = createServer((request, response) => {

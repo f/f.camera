@@ -1,10 +1,10 @@
-import { copyFile, mkdir, rm } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { siteFiles } from './site-files.mjs';
+import { copyFile, mkdir, rm } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { siteFiles } from "./site-files.mjs";
 
-const root = fileURLToPath(new URL('../', import.meta.url));
-const output = join(root, 'dist');
+const root = fileURLToPath(new URL("../", import.meta.url));
+const output = join(root, "dist");
 await rm(output, { recursive: true, force: true });
 for (const file of siteFiles) {
   await mkdir(dirname(join(output, file)), { recursive: true });

@@ -14,8 +14,8 @@ material keeps its own license:
 | [Caveat](https://github.com/googlefonts/caveat) | SIL Open Font License 1.1 | [assets/caveat-OFL.txt](assets/caveat-OFL.txt) |
 | [exifr 7.1.3](https://github.com/MikeKovarik/exifr) | MIT | [assets/exifr-LICENSE.txt](assets/exifr-LICENSE.txt) |
 
-The browser uses the included exifr build so it does not need a frontend bundler.
-The npm dependency supports local tests. Other npm packages retain their own licenses.
+Zero bundles the exifr npm package's lightweight browser parser with the JSX app.
+Preact is provided by Spacefast Zero. Other npm packages retain their own licenses.
 
 ## Example photographs
 
