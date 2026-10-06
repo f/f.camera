@@ -1321,3 +1321,8 @@ dialog::backdrop {
     transform: rotate(3deg);
   }
 }
+.notes-error {
+  margin: 0 0 1.5rem;
+  color: #666;
+  font-size: .85rem;
+}

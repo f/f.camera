@@ -6,13 +6,14 @@ import { PhotoDialog } from "./components/PhotoDialog";
 import { PhotoPostcard, type PostcardSource } from "./components/PhotoPostcard";
 import { PersonalIntro, SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { createPhotosQuery, loadSampleDetails, normalizePhotos, photoTitle } from "./data/photos";
+import { loadPhotoCaptions } from "./data/photo-captions.js";
 import type { Photo, SampleDetails } from "./data/types";
 
 function Head() {
   if (typeof document === "undefined") return null;
   return createPortal(
     <>
-      <link rel="stylesheet" href="/style.css?v=photo-postcard-3" />
+      <link rel="stylesheet" href="/style.css?v=photo-postcard-4" />
       <link rel="icon" href="/assets/favicon.svg?v=aperture-logo-1" />
       <link
         rel="preload"
@@ -37,7 +38,10 @@ function Head() {
 function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () => void }) {
   const query = useMemo(() => createPhotosQuery(attempt), [attempt]);
   const media = useQuery(query);
-  const captions = useQuery<Record<string, string>>("photoCaptions");
+  const [captions, setCaptions] = useState<Record<string, string>>({});
+  const [captionError, setCaptionError] = useState(false);
+  const [captionAttempt, setCaptionAttempt] = useState(0);
+  const mediaReady = Array.isArray(media);
   const [samples, setSamples] = useState<Record<string, SampleDetails> | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -46,6 +50,17 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
     source: PostcardSource;
   } | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!mediaReady) return;
+    let mounted = true;
+    setCaptionError(false);
+    loadPhotoCaptions().then(
+      (value) => { if (mounted) setCaptions(value); },
+      () => { if (mounted) setCaptionError(true); },
+    );
+    return () => { mounted = false; };
+  }, [mediaReady, captionAttempt]);
 
   useEffect(() => {
     let mounted = true;
@@ -110,6 +125,14 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
 
   return (
     <>
+      {captionError && (
+        <p class="notes-error" role="status">
+          Photo notes could not load.{" "}
+          <button class="state-retry" type="button" onClick={() => setCaptionAttempt((value) => value + 1)}>
+            Try again
+          </button>
+        </p>
+      )}
       <PhotoGallery
         photos={photos}
         onOpen={openPhoto}

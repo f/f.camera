@@ -79,6 +79,8 @@ These are field mappings in the theme. The theme does not copy or move existing 
 
 WordPress can fill `caption.rendered` from Description when Caption is empty. This app never uses that generated value for a post-it. Its Zero server query reads `caption.raw` and returns only the captions belonging to photos visible in the public media list. An empty caption stays empty, even when the description has text.
 
+The browser reads captions once after the public media list loads, using Zero's native query endpoint with an explicit argument object. If that read fails, a small retry message appears above the gallery instead of silently dropping the notes.
+
 Create a machine credential for this Space with the exact resource `/wp-json/wp/v2/media`, the `page.view` and `content.publish` capabilities, and the live target. WordPress requires the editor capability to read `context=edit`; the app itself only makes GET requests. Set `WP_MEDIA_ORIGIN` to your Space's HTTPS origin and store the credential as secret `WP_MEDIA_TOKEN` in the Space's environment variables. Keep both variables server-side.
 
 For local development, put the same values in the Git-ignored `.env.server` file:
