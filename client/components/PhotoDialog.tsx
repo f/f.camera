@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/ho
 import { readPhotoMetadata } from "../lib/photo-metadata.js";
 import { captionParts, locationMap, photoTitle, safeUrl } from "../data/photos";
 import type { Photo, PhotoLocation, PhotoMetadata } from "../data/types";
+import { PhotoImage } from "./PhotoImage";
 
 function PhotoCredit({ caption }: { caption: string }) {
   const parts = useMemo(() => captionParts(caption), [caption]);
@@ -183,26 +184,6 @@ export function PhotoDetails({
   );
 }
 
-function PhotoImage({ photo, title }: { photo: Photo; title: string }) {
-  const [failed, setFailed] = useState(false);
-  return (
-    <>
-      <img
-        id="lightbox-image"
-        hidden={failed}
-        src={photo.src}
-        srcSet={photo.srcset || undefined}
-        sizes="(max-width: 800px) calc(100vw - 32px), calc(100vw - 420px)"
-        alt={photo.alt || title}
-        onError={() => setFailed(true)}
-      />
-      <p id="lightbox-image-error" class="lightbox-image-error" hidden={!failed}>
-        This photograph could not load.
-      </p>
-    </>
-  );
-}
-
 export function PhotoDialog({
   photo,
   index,
@@ -301,7 +282,7 @@ export function PhotoDialog({
         {photo && (
           <div ref={contentRef} class="lightbox-content">
             <div class="lightbox-image-wrap">
-              <PhotoImage key={photo.src} photo={photo} title={title} />
+              <PhotoImage photo={photo} alt={photo.alt || title} mode="viewer" />
             </div>
             <PhotoDetails key={photo.id} detailsRef={detailsRef} photo={photo} title={title} />
           </div>

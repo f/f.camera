@@ -186,16 +186,101 @@ main {
 .photo-image {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: var(--image-ratio, 1.5);
+  height: 100%;
   object-fit: cover;
-  transition:
-    opacity 0.2s,
-    transform 0.35s;
 }
-.photo-open:hover .photo-image {
+.photo-open:hover .photo-frame[data-state="loaded"] .photo-image {
   opacity: 0.94;
   transform: scale(1.015);
+}
+.photo-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+.photo-frame--gallery {
+  --loading-surface: #f3f4f3;
+  aspect-ratio: var(--image-ratio, 1.5);
+  background: #f3f4f3;
+}
+.photo-frame--viewer {
+  --loading-surface: #111214;
+  height: 100%;
+  min-height: 0;
+}
+.photo-frame img {
+  opacity: 0;
+  transition:
+    opacity 0.45s ease,
+    transform 0.35s ease;
+}
+.photo-frame[data-state="loaded"] img {
+  opacity: 1;
+}
+.photo-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  color: #858b91;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s;
+}
+.photo-frame--viewer .photo-loading {
+  color: #999da5;
+}
+.photo-frame[data-state="loaded"] .photo-loading {
+  opacity: 0;
+  visibility: hidden;
+}
+.photo-aperture {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  overflow: visible;
+  opacity: 0.72;
+}
+.aperture-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.7;
+  opacity: 0.3;
+}
+.aperture-blade {
+  fill: currentColor;
+  stroke: var(--loading-surface);
+  stroke-width: 0.8;
+  transform-origin: 24px 4px;
+  animation: aperture-breathe 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.photo-loading-text {
+  max-width: 30ch;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+}
+.photo-loading-error {
+  font-size: 12px;
+  line-height: 1.5;
+}
+@keyframes aperture-breathe {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(9deg);
+  }
 }
 .photo-caption {
   padding: 11px 1px 0;
@@ -206,15 +291,6 @@ main {
   line-height: 1.5;
   font-weight: 400;
   color: #53575e;
-}
-.photo-unavailable {
-  display: grid;
-  place-items: center;
-  min-height: 220px;
-  padding: 30px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
 }
 .gallery-state {
   display: flex;
@@ -499,10 +575,6 @@ dialog::backdrop {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
-}
-.lightbox-image-error {
-  font-size: 13px;
-  color: #a2a5ab;
 }
 @keyframes appear {
   from {

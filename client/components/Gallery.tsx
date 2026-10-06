@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useLayoutEffect, useRef } from "preact/hooks";
+import { PhotoImage } from "./PhotoImage";
 import { photoDate } from "../lib/photo-dates.js";
 import { photoTitle } from "../data/photos";
 import type { Photo } from "../data/types";
@@ -28,10 +29,8 @@ export function GalleryState({
 }
 
 function PhotoCard({ photo, index, onOpen }: { photo: Photo; index: number; onOpen: OpenPhoto }) {
-  const [failedSource, setFailedSource] = useState<string | null>(null);
   const title = photoTitle(photo, index);
   const date = photoDate(photo);
-  const hasDimensions = Number(photo.width) > 0 && Number(photo.height) > 0;
   const noteId = `photo-note-${photo.id}`;
   return (
     <figure class="photo" style={{ "--photo-index": index }}>
@@ -43,26 +42,12 @@ function PhotoCard({ photo, index, onOpen }: { photo: Photo; index: number; onOp
         aria-describedby={photo.note ? noteId : undefined}
         onClick={(event) => onOpen(photo, event.currentTarget)}
       >
-        {failedSource === photo.src ? (
-          <span class="photo-unavailable">Photograph unavailable</span>
-        ) : (
-          <img
-            class="photo-image"
-            src={photo.src}
-            srcSet={photo.srcset || undefined}
-            sizes="(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) calc((100vw - 82px) / 2), (min-width: 1800px) 516px, (min-width: 1560px) 473px, calc((100vw - 140px) / 3)"
-            alt={photo.alt || title}
-            width={hasDimensions ? photo.width : undefined}
-            height={hasDimensions ? photo.height : undefined}
-            style={
-              hasDimensions ? { "--image-ratio": `${photo.width} / ${photo.height}` } : undefined
-            }
-            loading={index < 2 ? "eager" : "lazy"}
-            decoding="async"
-            fetchPriority={index === 0 ? "high" : undefined}
-            onError={() => setFailedSource(photo.src)}
-          />
-        )}
+        <PhotoImage
+          photo={photo}
+          alt={photo.alt || title}
+          loading={index < 2 ? "eager" : "lazy"}
+          highPriority={index === 0}
+        />
         {photo.note && (
           <span id={noteId} class={`photo-note photo-note--${(photo.id % 4) + 1}`}>
             <span class="photo-note-text">{photo.note}</span>
