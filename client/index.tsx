@@ -7,13 +7,14 @@ import { PhotoPostcard, type PostcardSource } from "./components/PhotoPostcard";
 import { PersonalIntro, SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { createPhotosQuery, loadSampleDetails, normalizePhotos, photoTitle } from "./data/photos";
 import { loadPhotoCaptions } from "./data/photo-captions.js";
+import { loadWithRetry } from "./lib/load-retry.js";
 import type { Photo, SampleDetails } from "./data/types";
 
 function Head() {
   if (typeof document === "undefined") return null;
   return createPortal(
     <>
-      <link rel="stylesheet" href="/style.css?v=photo-postcard-4" />
+      <link rel="stylesheet" href="/style.css?v=automatic-retry-1" />
       <link rel="icon" href="/assets/favicon.svg?v=aperture-logo-1" />
       <link
         rel="preload"
@@ -39,8 +40,6 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
   const query = useMemo(() => createPhotosQuery(attempt), [attempt]);
   const media = useQuery(query);
   const [captions, setCaptions] = useState<Record<string, string>>({});
-  const [captionError, setCaptionError] = useState(false);
-  const [captionAttempt, setCaptionAttempt] = useState(0);
   const mediaReady = Array.isArray(media);
   const [samples, setSamples] = useState<Record<string, SampleDetails> | null>(null);
   const [timedOut, setTimedOut] = useState(false);
@@ -53,14 +52,12 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
 
   useEffect(() => {
     if (!mediaReady) return;
-    let mounted = true;
-    setCaptionError(false);
-    loadPhotoCaptions().then(
-      (value) => { if (mounted) setCaptions(value); },
-      () => { if (mounted) setCaptionError(true); },
-    );
-    return () => { mounted = false; };
-  }, [mediaReady, captionAttempt]);
+    const controller = new AbortController();
+    loadWithRetry((signal) => loadPhotoCaptions("", signal), controller.signal)
+      .then((value) => { if (!controller.signal.aborted) setCaptions(value); })
+      .catch(() => { /* Unmount cancels the retry loop. */ });
+    return () => controller.abort();
+  }, [mediaReady]);
 
   useEffect(() => {
     let mounted = true;
@@ -125,14 +122,6 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
 
   return (
     <>
-      {captionError && (
-        <p class="notes-error" role="status">
-          Photo notes could not load.{" "}
-          <button class="state-retry" type="button" onClick={() => setCaptionAttempt((value) => value + 1)}>
-            Try again
-          </button>
-        </p>
-      )}
       <PhotoGallery
         photos={photos}
         onOpen={openPhoto}

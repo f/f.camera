@@ -1,9 +1,10 @@
-/** Read the native Zero query with an explicit argument object. */
-export async function loadPhotoCaptions(origin = "") {
+/** @param {string} [origin] @param {AbortSignal} [signal] */
+export async function loadPhotoCaptions(origin = "", signal) {
   const response = await fetch(`${origin}/__zero/run`, {
     method: "POST",
     credentials: "same-origin",
     cache: "no-store",
+    signal,
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     // Keep this read's argument shape consistent across dev and hosted runtimes.
     body: JSON.stringify({ op: "query.run", name: "photoCaptions", args: {} }),

@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { Photo } from "../data/types";
+import { waitToRetry } from "../lib/load-retry.js";
 
 type Props = {
   photo: Photo;
@@ -41,18 +42,67 @@ function Aperture({ id }: { id: string }) {
 
 function ImageFrame({ photo, alt, mode = "gallery", loading = "eager", highPriority }: Props) {
   const imageRef = useRef<HTMLImageElement>(null);
-  const [state, setState] = useState<"loading" | "loaded" | "error">("loading");
+  const [state, setState] = useState<"loading" | "loaded">("loading");
   const [useOriginal, setUseOriginal] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const viewer = mode !== "gallery";
   const hasDimensions = Number(photo.width) > 0 && Number(photo.height) > 0;
+  const source = useMemo(() => {
+    if (!attempt) return photo.src;
+    const url = new URL(photo.src, window.location.href);
+    url.searchParams.set("_fcamera_retry", `${Date.now()}-${attempt}`);
+    return url.href;
+  }, [photo.src, attempt]);
 
-  // Cached images can finish before the component's load listener is attached.
   useLayoutEffect(() => {
     const image = imageRef.current;
-    if (image?.complete && image.naturalWidth > 0) {
+    if (!image) return;
+    let pendingRetry: AbortController | undefined;
+    let disposed = false;
+    let failed = false;
+
+    const loaded = () => {
+      if (disposed || image !== imageRef.current) return;
+      pendingRetry?.abort();
+      pendingRetry = undefined;
+      failed = false;
       setState("loaded");
+    };
+    const retry = () => {
+      if (failed || disposed || image !== imageRef.current) return;
+      failed = true;
+      setState("loading");
+      if (!useOriginal && photo.srcset) {
+        setUseOriginal(true);
+        return;
+      }
+      const controller = new AbortController();
+      pendingRetry = controller;
+      void waitToRetry(attempt, controller.signal).then(
+        () => {
+          if (!disposed && !controller.signal.aborted && image === imageRef.current) {
+            setAttempt((current) => current + 1);
+          }
+        },
+        () => {}, // Loading or removing this image cancels the pending retry.
+      );
+    };
+
+    image.addEventListener("load", loaded);
+    image.addEventListener("error", retry);
+    // A cached request may finish before listeners attach. Untouched lazy images
+    // have no currentSrc, so they must not start a retry timer.
+    if (image.complete && image.currentSrc) {
+      if (image.naturalWidth > 0) loaded();
+      else retry();
     }
-  }, [useOriginal]);
+    return () => {
+      disposed = true;
+      pendingRetry?.abort();
+      image.removeEventListener("load", loaded);
+      image.removeEventListener("error", retry);
+    };
+  }, [attempt, useOriginal, photo.srcset]);
 
   return (
     <span
@@ -62,11 +112,11 @@ function ImageFrame({ photo, alt, mode = "gallery", loading = "eager", highPrior
       style={hasDimensions ? { "--image-ratio": `${photo.width} / ${photo.height}` } : undefined}
     >
       <img
-        key={useOriginal ? "original" : "responsive"}
+        key={`${useOriginal ? "original" : "responsive"}-${attempt}`}
         ref={imageRef}
         id={mode === "viewer" ? "lightbox-image" : undefined}
         class={viewer ? undefined : "photo-image"}
-        src={photo.src}
+        src={source}
         srcSet={useOriginal ? undefined : photo.srcset || undefined}
         sizes={
           useOriginal
@@ -80,32 +130,14 @@ function ImageFrame({ photo, alt, mode = "gallery", loading = "eager", highPrior
         alt={alt}
         width={hasDimensions ? photo.width : undefined}
         height={hasDimensions ? photo.height : undefined}
-        loading={useOriginal ? "eager" : loading}
+        loading={useOriginal || attempt > 0 ? "eager" : loading}
         decoding="async"
         fetchPriority={highPriority ? "high" : undefined}
-        onLoad={(event) => {
-          if (event.currentTarget === imageRef.current) setState("loaded");
-        }}
-        onError={(event) => {
-          if (event.currentTarget !== imageRef.current) return;
-          if (!useOriginal && photo.srcset) {
-            setState("loading");
-            setUseOriginal(true);
-          } else {
-            setState("error");
-          }
-        }}
       />
       <span class="photo-loading" aria-hidden="true">
         {state === "loading" && <Aperture id={`aperture-${mode}-${photo.id}`} />}
-        {state === "error" && <span class="photo-loading-error">Photograph unavailable</span>}
         <span class="photo-loading-text">{alt}</span>
       </span>
-      {state === "error" && (
-        <span class="sr-only" role="status">
-          This photograph could not load.
-        </span>
-      )}
     </span>
   );
 }

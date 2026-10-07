@@ -374,10 +374,6 @@ main {
   text-align: center;
   text-wrap: balance;
 }
-.photo-loading-error {
-  font-size: 12px;
-  line-height: 1.5;
-}
 @keyframes aperture-breathe {
   0%,
   100% {
@@ -1320,9 +1316,4 @@ dialog::backdrop {
     top: 20px;
     transform: rotate(3deg);
   }
-}
-.notes-error {
-  margin: 0 0 1.5rem;
-  color: #666;
-  font-size: .85rem;
 }
