@@ -44,14 +44,6 @@ export interface PhotoMetadata {
   readStatus?: string;
 }
 
-export interface SampleDetails {
-  metadata?: PhotoMetadata;
-  sourceUrl?: string;
-  metadataSourceUrl?: string;
-  takenOn?: string | null;
-  location?: PhotoLocation | null;
-}
-
 export interface Photo {
   id: number;
   src: string;
@@ -66,5 +58,4 @@ export interface Photo {
   dateGmt: string;
   wpMeta: Record<string, unknown>;
   originalSrc: string;
-  sample: SampleDetails | null;
 }

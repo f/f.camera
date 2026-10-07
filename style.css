@@ -414,15 +414,6 @@ main {
   margin: 0;
   max-width: 340px;
 }
-.state-retry {
-  margin-top: 20px;
-  padding: 11px 18px;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 7px;
-  font-size: 12px;
-  min-height: 44px;
-}
 .site-footer {
   display: flex;
   align-items: center;

@@ -2,7 +2,7 @@ import type { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { readPhotoMetadata } from "../lib/photo-metadata.js";
 import { createPhotoSwipe } from "../lib/photo-swipe.js";
-import { locationMap, photoTitle, safeUrl } from "../data/photos";
+import { locationMap, photoTitle } from "../data/photos";
 import type { Photo, PhotoLocation, PhotoMetadata } from "../data/types";
 import { PhotoImage } from "./PhotoImage";
 import { ExternalLinkIcon } from "./ExternalLinkIcon";
@@ -89,8 +89,6 @@ export function PhotoDetails({
     };
   }, [photo]);
 
-  const source = photo.sample;
-  const metadata = source?.metadata || {};
   const keys = [
     "camera",
     "lens",
@@ -100,7 +98,7 @@ export function PhotoDetails({
     "focalLength",
     "capturedAt",
   ] as const;
-  const value = (key: (typeof keys)[number]) => extracted?.[key] ?? metadata[key];
+  const value = (key: (typeof keys)[number]) => extracted?.[key];
   const fields = [
     { label: "Camera", value: value("camera"), wide: true },
     { label: "Lens", value: value("lens"), wide: true },
@@ -114,18 +112,14 @@ export function PhotoDetails({
       value: photo.width && photo.height ? `${photo.width} × ${photo.height}` : null,
     },
   ];
-  const usedSource = keys.some((key) => metadata[key] && !extracted?.[key]);
-  const sourceHref = usedSource ? safeUrl(source?.sourceUrl) : null;
   const hasDetails = keys.some((key) => value(key));
   const status = !extracted
     ? "Reading photo metadata…"
-    : usedSource
-      ? "Photo details recovered from the original source."
-      : hasDetails
-        ? "Settings recorded in the photo."
-        : extracted.status === "unavailable"
-          ? "Photo metadata could not be read."
-          : "Camera settings are not included in this file.";
+    : hasDetails
+      ? "Settings recorded in the photo."
+      : extracted.status === "unavailable"
+        ? "Photo metadata could not be read."
+        : "Camera settings are not included in this file.";
 
   return (
     <aside ref={detailsRef} class="photo-details" aria-label="Photograph details" tabIndex={0}>
@@ -154,20 +148,9 @@ export function PhotoDetails({
         <p id="metadata-status" class="detail-note" role="status">
           {status}
         </p>
-        {sourceHref && (
-          <a
-            id="metadata-source"
-            class="detail-link"
-            href={sourceHref}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Details from the photo source <ExternalLinkIcon />
-          </a>
-        )}
       </section>
       <LocationMap
-        location={extracted?.location || source?.location}
+        location={extracted?.location}
         title={title}
         loading={!extracted}
       />

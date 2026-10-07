@@ -1,36 +1,28 @@
-import { contentQueryOptions } from "@spacefast/zero/client";
 import { sortPhotosNewestFirst } from "../lib/photo-dates.js";
-import type { Photo, PhotoLocation, SampleDetails, WpMedia } from "./types";
+import type { Photo, PhotoLocation, WpMedia } from "./types";
 
-let sampleRead: Promise<Record<string, SampleDetails>> | null = null;
-
-export function loadSampleDetails(): Promise<Record<string, SampleDetails>> {
-  if (!sampleRead) {
-    sampleRead = fetch("/sample-details.json", { signal: AbortSignal.timeout(8000) })
-      .then(async (response) => {
-        if (!response.ok) return {};
-        const value: Record<string, SampleDetails> = await response.json();
-        return value && typeof value === "object" && !Array.isArray(value) ? value : {};
-      })
-      .catch(() => ({}));
+export async function loadPhotoMedia(origin = "", signal?: AbortSignal): Promise<WpMedia[]> {
+  const params = new URLSearchParams({
+    media_type: "image",
+    per_page: "100",
+    orderby: "date",
+    order: "desc",
+    _fields: "id,source_url,media_details,title,caption,description,alt_text,date,date_gmt",
+  });
+  // Public WordPress reads must not wait for a Zero session or realtime connection.
+  const response = await fetch(`${origin}/wp-json/wp/v2/media?${params}`, {
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+    signal,
+  });
+  if (!response.ok) throw new Error("Could not load photographs.");
+  const media: WpMedia[] = await response.json();
+  if (!Array.isArray(media) || media.some((item) =>
+    !item || !Number.isInteger(item.id) || typeof item.source_url !== "string")) {
+    throw new Error("Invalid photograph list.");
   }
-  return sampleRead;
-}
-
-export function createPhotosQuery(attempt = 0) {
-  return contentQueryOptions<WpMedia[]>(
-    attempt ? `content.media.list.retry.${attempt}` : "content.media.list",
-    {
-      route: "wp/v2/media",
-      params: {
-        media_type: "image",
-        per_page: 100,
-        orderby: "date",
-        order: "desc",
-        _fields: "id,source_url,media_details,title,caption,description,alt_text,date,date_gmt",
-      },
-    },
-  );
+  return media;
 }
 
 export function plainText(value: unknown): string {
@@ -78,7 +70,6 @@ export function photoNote(value: unknown): string {
 
 function normalizePhoto(
   media: WpMedia,
-  sampleDetails: Record<string, SampleDetails>,
   captions: Record<string, string>,
 ): Photo | null {
   const src = safeUrl(media?.source_url);
@@ -112,17 +103,15 @@ function normalizePhoto(
     dateGmt: media.date_gmt || "",
     wpMeta: details.image_meta || {},
     originalSrc: new URL(details.original_image || src, src).href,
-    sample: sampleDetails[new URL(src).pathname] || null,
   };
 }
 
 export function normalizePhotos(
   media: WpMedia[],
-  sampleDetails: Record<string, SampleDetails>,
   captions: Record<string, string> = {},
 ): Photo[] {
   const photos = media
-    .map((item) => normalizePhoto(item, sampleDetails, captions))
+    .map((item) => normalizePhoto(item, captions))
     .filter((photo): photo is Photo => photo !== null);
   return sortPhotosNewestFirst(photos);
 }

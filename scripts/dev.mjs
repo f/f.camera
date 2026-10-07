@@ -27,7 +27,6 @@ const isRuntimePath = (path) =>
 // Development only. WordPress remains the source of truth on the hosted site.
 export async function createDevServer({
   wpOrigin,
-  fixture,
   watch = true,
 } = {}) {
   const origin = new URL(wpOrigin || "https://f.camera");
@@ -43,16 +42,6 @@ export async function createDevServer({
       "--wp-origin must be an HTTP(S) origin without a path or credentials.",
     );
   }
-  const demo =
-    fixture ??
-    (wpOrigin
-      ? null
-      : JSON.parse(
-          await readFile(
-            new URL("../tests/fixtures/media.json", import.meta.url),
-            "utf8",
-          ),
-        ));
   const imagePaths = new Set();
   const remoteCache = new Map();
   const pendingReads = new Map();
@@ -224,23 +213,21 @@ export async function createDevServer({
         return send(405, "WordPress preview data is read-only.");
       }
       if (pathname === "/wp-json/wp/v2/media") {
-        const items =
-          demo ||
-          JSON.parse(
-            (
-              await remote(
-                new URL(`/wp-json/wp/v2/media${url.search}`, origin),
-                {
-                  maximum: 1024 * 1024,
-                  maxAge: 45 * 1000,
-                  validate: (file) => {
-                    if (!Array.isArray(JSON.parse(file.bytes)))
-                      throw new Error("Expected a public WordPress media list.");
-                  },
+        const items = JSON.parse(
+          (
+            await remote(
+              new URL(`/wp-json/wp/v2/media${url.search}`, origin),
+              {
+                maximum: 1024 * 1024,
+                maxAge: 45 * 1000,
+                validate: (file) => {
+                  if (!Array.isArray(JSON.parse(file.bytes)))
+                    throw new Error("Expected a public WordPress media list.");
                 },
-              )
-            ).bytes,
-          );
+              },
+            )
+          ).bytes,
+        );
         if (!Array.isArray(items))
           throw new Error("Expected a public WordPress media list.");
         return send(
@@ -327,11 +314,7 @@ if (
   const server = await createDevServer({ wpOrigin: values["wp-origin"] });
   server.listen(port, "127.0.0.1", () => {
     console.log(`f.camera Zero preview: http://127.0.0.1:${port}`);
-    console.log(
-      values["wp-origin"]
-        ? "Using anonymous public WordPress data."
-        : "Using demo JSON; sample images load anonymously from f.camera.",
-    );
+    console.log("Using anonymous public WordPress data.");
   });
   server.on("error", (error) => {
     console.error(error.message);

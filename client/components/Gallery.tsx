@@ -11,21 +11,14 @@ type OpenPostcard = (photo: Photo, source: PostcardSource) => void;
 export function GalleryState({
   heading,
   detail = "",
-  onRetry,
 }: {
   heading: string;
   detail?: string;
-  onRetry?: () => void;
 }) {
   return (
     <div id="gallery-state" class="gallery-state" role="status" aria-live="polite">
       <p class="state-heading">{heading}</p>
       <p class="state-detail">{detail}</p>
-      {onRetry && (
-        <button class="state-retry" type="button" onClick={onRetry}>
-          Try again
-        </button>
-      )}
     </div>
   );
 }

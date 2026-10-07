@@ -10,7 +10,7 @@ The site has a responsive masonry gallery, small handwritten notes, and a photo 
 
 The frontend is a JSX app built with Zero's native Preact runtime. `pages/index.tsx` declares the interactive home page and renders the app from `client/index.tsx`. Components and hooks manage the gallery, photo viewer, and metadata. Spacefast compiles and mounts the page; there is no separate frontend framework or bundler to configure.
 
-The gallery uses Zero's `contentQueryOptions` and `useQuery` to read the space's WordPress media. These hooks share Zero's query cache and lifecycle. A small capsule in `server/index.ts` declares the native media collection as publicly readable. It does not create a second photo database.
+The gallery reads the space's public WordPress media endpoint directly, on the same origin. This read does not depend on Zero identity initialization or a realtime connection. Failed requests retry automatically with a 20-second request timeout and increasing delays capped at 30 seconds. A small Zero capsule in `server/index.ts` declares the native media collection as publicly readable and provides the server-only caption query. It does not create a second photo database.
 
 Photos belong to the space's WordPress media library. They are not copied into this repository. Publishing a code change updates the theme; it does not replace the media library. The small image under `tests/fixtures/` is only an EXIF test fixture.
 
@@ -19,17 +19,16 @@ Photos belong to the space's WordPress media library. They are not copied into t
 | `pages/index.tsx` | Native Zero client page for `/` |
 | `client/index.tsx` | Zero app entry and page composition |
 | `client/components/` | JSX components for the bio, gallery, photo viewer, and map |
-| `client/data/` | Typed WordPress query, photo normalization, and safe note text |
+| `client/data/` | WordPress media and caption readers, photo normalization, and safe note text |
 | `client/lib/` | Date selection, newest-first order, and original-image EXIF |
 | `style.css` | Layout, masonry spacing, notes, and photo viewer |
 | `server/index.ts` | Zero capsule, public media collection, and caption query |
 | `server/photo-captions.ts` | Server-only reader for actual WordPress captions |
 | `sf.jsonc` | Zero entries, page metadata, and public asset build |
-| `sample-details.json` | Sourced metadata for the example collection; no photo files |
 
 ## Run locally
 
-Use Node.js 22.18 or newer. No Spacefast login is needed for the bundled local demo.
+Use Node.js 22.18 or newer. No Spacefast login is needed to preview public photos.
 
 ```sh
 git clone https://github.com/f/f.camera.git
@@ -38,7 +37,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173`. The development command starts the real `sf dev` runtime, which compiles and serves the JSX app. A local adapter supplies a small WordPress-shaped sample response. Sample image requests are read from the public f.camera media library, so displaying the photos and reading their EXIF requires an internet connection. The photos are not downloaded into the repository.
+Open `http://127.0.0.1:4173`. The development command starts the real `sf dev` runtime, which compiles and serves the JSX app. The local preview reads public photos from f.camera's WordPress media library by default. Displaying photos and reading their EXIF requires an internet connection. Photos are not downloaded into the repository.
 
 To preview your own space's public media instead:
 
@@ -48,7 +47,7 @@ npm run dev -- --wp-origin https://YOUR-SPACE.view.fast
 
 The preview does not upload photos or edit WordPress. It caches the public media list for 45 seconds, so after editing a photo in Content, wait up to 45 seconds and reload to see the change locally. You can use another port with `npm run dev -- --port 4174`.
 
-For post-its from your own media library, configure the caption reader below. Without it, public photos and postcards still work, but post-its stay hidden. The bundled demo includes explicit captions and needs no credential.
+For post-its, configure the caption reader below with the same WordPress origin used by your preview. Without it, public photos and postcards still work, but post-its stay hidden.
 
 Run the checks and compile the Zero project:
 
@@ -79,7 +78,7 @@ These are field mappings in the theme. The theme does not copy or move existing 
 
 WordPress can fill `caption.rendered` from Description when Caption is empty. This app never uses that generated value for a post-it. Its Zero server query reads `caption.raw` and returns only the captions belonging to photos visible in the public media list. An empty caption stays empty, even when the description has text.
 
-The browser reads captions after the public media list loads, using Zero's native query endpoint with an explicit argument object. Failed note and image requests retry automatically, with delays increasing from one second to a maximum of 30 seconds. Retries pause while offline and resume when the connection returns. Images keep their aperture loader until they load; no manual retry is needed.
+The browser reads captions after the public media list loads, using Zero's native query endpoint with an explicit argument object. Failed photo-list, note, and image requests retry automatically, with delays increasing from one second to a maximum of 30 seconds. Photo-list and note requests time out after 20 seconds so a stalled connection can be retried. Retries pause while offline and resume when the connection returns. Images keep their aperture loader until they load; no manual retry is needed.
 
 Create a machine credential for this Space with the exact resource `/wp-json/wp/v2/media`, the `page.view` and `content.publish` capabilities, and the live target. WordPress requires the editor capability to read `context=edit`; the app itself only makes GET requests. Set `WP_MEDIA_ORIGIN` to your Space's HTTPS origin and store the credential as secret `WP_MEDIA_TOKEN` in the Space's environment variables. Keep both variables server-side.
 
@@ -90,17 +89,17 @@ WP_MEDIA_ORIGIN=https://YOUR-SPACE.view.fast
 WP_MEDIA_TOKEN=YOUR_PRIVATE_MACHINE_TOKEN
 ```
 
-Restart the preview after configuring them. Never commit that file or put the token in browser code. The gallery still uses Zero's native public content query for the photos; only the caption query needs the credential. No WordPress plugin or Spacefast source change is required.
+Restart the preview after configuring them. Never commit that file or put the token in browser code. The gallery reads public photos without a credential; only the Zero caption query needs it. No WordPress plugin or Spacefast source change is required.
 
 The current gallery reads up to 100 image attachments. Adding a photo or updating its title, caption, or description does not need a code deployment. Reload the page to read the changes; the local preview may keep its media list for up to 45 seconds.
 
 ## Dates, EXIF, and maps
 
-Photos are sorted newest first using the capture timestamp WordPress extracted from EXIF. The example photos can fall back to a verified `takenOn` date in `sample-details.json`. When neither is available, the WordPress upload date is used and labeled **Added**. Equal dates use the attachment ID, newest first. Opening a photo does not reorder the gallery.
+Photos are sorted newest first using the capture timestamp WordPress extracted from EXIF. When it is unavailable, the WordPress upload date is used and labeled **Added**. Equal dates use the attachment ID, newest first. Opening a photo does not reorder the gallery.
 
 The photo viewer reads camera, lens, exposure, capture time, and GPS from the same-origin original image. WordPress metadata fills missing fields. Original reads happen on demand, are cached for the page session, and are limited to 20 MiB and 20 seconds. Unsupported files and missing values do not get invented settings.
 
-GPS locations show a marker on a small OpenStreetMap preview. Sourced locations for the example collection are labeled as approximate areas. A photo without a location gets no map. The map keeps its attribution and has an **Open map** link. Use the arrow keys to move between photos, or swipe left and right on the photo on a phone. Escape closes the viewer.
+GPS coordinates recorded in a photo show a marker on a small OpenStreetMap preview. A photo without coordinates gets no map. The map keeps its attribution and has an **Open map** link. Use the arrow keys to move between photos, or swipe left and right on the photo on a phone. Escape closes the viewer.
 
 A photo with a Description has a clickable title in the gallery. Clicking it brings the photo to the center, enlarges it, and flips it to reveal the postcard message. **Back to photographs** or Escape returns to the gallery. Clicking the photo itself opens the regular details viewer, where the title is plain text and its post-it appears below it.
 
@@ -108,7 +107,7 @@ A photo with a Description has a clickable title in the gallery. Clicking it bri
 
 Edit the bio, website, Instagram link, and camera kit in the JSX components under `client/components/`. Set the page title and description in `sf.jsonc`. Adjust colors, spacing, and note styles in `style.css`. Change the project name in `sf.jsonc` and `server/index.ts` when you create your own site.
 
-For a new collection, set `sample-details.json` to `{}`. Its existing entries describe the example photos on f.camera and should not be applied to your photos. Upload your own images through your space's media library, with their titles, alt text, and credits.
+Upload your images through your space's media library, with their titles, alt text, and credits. Camera settings and locations come from the photos and WordPress metadata.
 
 Zero builds the client bundle and its platform imports. The custom stylesheet is linked from the app's head component; update its `?v=` value when changing CSS.
 
@@ -124,6 +123,6 @@ Later pushes to the connected production branch build and publish through Spacef
 
 ## License and photo credits
 
-The authored theme source is available under the [MIT license](LICENSE). Bundled Manrope and Caveat fonts keep their SIL Open Font License files. The bundled `exifr` reader keeps its MIT license. See [third-party notices](THIRD_PARTY_NOTICES.md) for the full list and example photo sources.
+The authored theme source is available under the [MIT license](LICENSE). Bundled Manrope and Caveat fonts keep their SIL Open Font License files. The bundled `exifr` reader keeps its MIT license. See [third-party notices](THIRD_PARTY_NOTICES.md) for the full list.
 
-The example photos belong to their credited photographers. They are not photographs by me, and the theme's MIT license does not grant rights to those images. [Third-party notices](THIRD_PARTY_NOTICES.md) lists their original sources. Include any required credit when adding a photo; Caption and Description display plain text, so write out a source URL if it must be visible there. Use your own photos or follow each photo's applicable terms when making your own collection.
+The theme's MIT license covers its code, not photos in a connected WordPress library. Use your own photos or follow each photo's applicable terms. Include any required credit when adding a photo; Caption and Description display plain text, so write out a source URL if it must be visible there.

@@ -13,12 +13,8 @@ const MONTHS = [
   "Dec",
 ];
 
-function parseDate(value, dateOnly = false) {
-  if (
-    typeof value !== "string" ||
-    (dateOnly && !/^\d{4}-\d{2}-\d{2}$/.test(value))
-  )
-    return null;
+function parseDate(value) {
+  if (typeof value !== "string") return null;
   const match = value.match(
     /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z?)?$/,
   );
@@ -74,12 +70,10 @@ function dated(timestamp, kind) {
   };
 }
 
-/** Dates from WordPress and the verified sample record; no image reads. */
+/** Capture or upload dates from WordPress; no image reads. */
 export function photoDate(photo, { mode = "taken" } = {}) {
   if (mode !== "uploaded") {
-    const taken =
-      captureTimestamp(photo.wpMeta?.created_timestamp) ??
-      parseDate(photo.sample?.takenOn, true);
+    const taken = captureTimestamp(photo.wpMeta?.created_timestamp);
     if (taken !== null) return dated(taken, "taken");
   }
   const added = parseDate(photo.dateGmt) ?? parseDate(photo.date);

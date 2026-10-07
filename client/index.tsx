@@ -1,20 +1,19 @@
-import { useQuery } from "@spacefast/zero/client";
 import { createPortal } from "preact/compat";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { GalleryState, PhotoGallery } from "./components/Gallery";
 import { PhotoDialog } from "./components/PhotoDialog";
 import { PhotoPostcard, type PostcardSource } from "./components/PhotoPostcard";
 import { PersonalIntro, SiteFooter, SiteHeader } from "./components/SiteChrome";
-import { createPhotosQuery, loadSampleDetails, normalizePhotos, photoTitle } from "./data/photos";
+import { loadPhotoMedia, normalizePhotos, photoTitle } from "./data/photos";
 import { loadPhotoCaptions } from "./data/photo-captions.js";
 import { loadWithRetry } from "./lib/load-retry.js";
-import type { Photo, SampleDetails } from "./data/types";
+import type { Photo, WpMedia } from "./data/types";
 
 function Head() {
   if (typeof document === "undefined") return null;
   return createPortal(
     <>
-      <link rel="stylesheet" href="/style.css?v=automatic-retry-1" />
+      <link rel="stylesheet" href="/style.css?v=public-media-1" />
       <link rel="icon" href="/assets/favicon.svg?v=aperture-logo-1" />
       <link
         rel="preload"
@@ -36,12 +35,10 @@ function Head() {
   );
 }
 
-function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () => void }) {
-  const query = useMemo(() => createPhotosQuery(attempt), [attempt]);
-  const media = useQuery(query);
+function PhotoCollection() {
+  const [media, setMedia] = useState<WpMedia[] | null>(null);
   const [captions, setCaptions] = useState<Record<string, string>>({});
   const mediaReady = Array.isArray(media);
-  const [samples, setSamples] = useState<Record<string, SampleDetails> | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [postcard, setPostcard] = useState<{
@@ -49,6 +46,19 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
     source: PostcardSource;
   } | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadWithRetry(async (signal) => {
+      const value = await loadPhotoMedia("", signal);
+      // A malformed photo must also retry, rather than fail later during render.
+      normalizePhotos(value);
+      return value;
+    }, controller.signal)
+      .then((value) => { if (!controller.signal.aborted) setMedia(value); })
+      .catch(() => { /* Unmount cancels the retry loop. */ });
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     if (!mediaReady) return;
@@ -60,28 +70,15 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
   }, [mediaReady]);
 
   useEffect(() => {
-    let mounted = true;
-    loadSampleDetails().then((details) => {
-      if (mounted) setSamples(details);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-  useEffect(() => {
-    if (media !== undefined && samples !== null) return;
+    if (media !== null) return;
     const timeout = window.setTimeout(() => setTimedOut(true), 18000);
     return () => window.clearTimeout(timeout);
-  }, [media, samples]);
+  }, [media]);
 
-  const photos = useMemo(() => {
-    if (!Array.isArray(media) || samples === null) return null;
-    try {
-      return normalizePhotos(media, samples, captions);
-    } catch {
-      return null;
-    }
-  }, [media, samples, captions]);
+  const photos = useMemo(
+    () => media === null ? null : normalizePhotos(media, captions),
+    [media, captions],
+  );
 
   const openPhoto = useCallback((photo: Photo, button: HTMLButtonElement) => {
     opener.current = button;
@@ -98,25 +95,14 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
     setSelectedId(photos[(selectedIndex + direction + photos.length) % photos.length].id);
   };
 
-  if (media === undefined || samples === null) {
-    return timedOut ? (
-      <GalleryState
-        heading="Could not load photographs."
-        detail="Please try again in a moment."
-        onRetry={onRetry}
-      />
-    ) : (
-      <GalleryState heading="Loading photographs…" />
-    );
-  }
-  if (!photos)
+  if (photos === null) {
     return (
       <GalleryState
-        heading="Could not load photographs."
-        detail="Please try again in a moment."
-        onRetry={onRetry}
+        heading="Loading photographs…"
+        detail={timedOut ? "Taking a little longer. Retrying automatically…" : ""}
       />
     );
+  }
   if (!photos.length)
     return <GalleryState heading="No photographs yet." detail="Check back soon." />;
 
@@ -147,7 +133,6 @@ function PhotoCollection({ attempt, onRetry }: { attempt: number; onRetry: () =>
 }
 
 export default function App() {
-  const [attempt, setAttempt] = useState(0);
   return (
     <>
       <Head />
@@ -161,11 +146,7 @@ export default function App() {
           <h2 id="gallery-title" class="sr-only">
             Photographs
           </h2>
-          <PhotoCollection
-            key={attempt}
-            attempt={attempt}
-            onRetry={() => setAttempt((value) => value + 1)}
-          />
+          <PhotoCollection />
           <noscript>
             <p class="noscript-note">Please enable JavaScript to view the photographs.</p>
           </noscript>

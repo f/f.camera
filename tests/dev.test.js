@@ -17,8 +17,15 @@ async function listen(server, context) {
   return `http://127.0.0.1:${server.address().port}`;
 }
 
-test("native Zero preview serves its compiled client and runtime beside read-only demo media", async (context) => {
-  const origin = await listen(await createDevServer({ watch: false }), context);
+test("native Zero preview serves its compiled client and runtime", async (context) => {
+  const upstream = await listen(
+    createServer((_request, response) => response.writeHead(404).end()),
+    context,
+  );
+  const origin = await listen(
+    await createDevServer({ wpOrigin: upstream, watch: false }),
+    context,
+  );
   const page = await fetch(origin);
   assert.equal(page.status, 200);
   assert.equal(page.headers.get("content-type"), "text/html; charset=utf-8");
@@ -89,19 +96,12 @@ test("native Zero preview serves its compiled client and runtime beside read-onl
     upgrade.once("error", reject);
     upgrade.end();
   });
-  const media = await (await fetch(`${origin}/wp-json/wp/v2/media`)).json();
-  assert.equal(media.length, 6);
-  assert.equal(new URL(media[0].source_url).origin, origin);
-  assert.equal(
-    media.filter((photo) => photo.description.rendered.trim()).length,
-    2,
-  );
   for (const path of [
     "/.env",
     "/package.json",
     "/server/index.ts",
     "/scripts/dev.mjs",
-    "/tests/fixtures/media.json",
+    "/tests/fixtures/exif-gps.jpg",
   ]) {
     assert.equal((await fetch(`${origin}${path}`)).status, 404);
   }
@@ -111,7 +111,7 @@ test("native Zero preview serves its compiled client and runtime beside read-onl
   );
 });
 
-test("optional public WordPress origin returns local image URLs and proxies only listed media", async (context) => {
+test("public WordPress preview returns local image URLs and proxies only listed media", async (context) => {
   const jpeg = await readFile(
     new URL("./fixtures/exif-gps.jpg", import.meta.url),
   );
